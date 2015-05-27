@@ -393,7 +393,10 @@ MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bow
 # Core Environment variables {{{
 
 # OS can be GNU or BSD
-export OS=GNU
+case $(uname) in
+	Darwin) export OS=BSD;;
+	*) export OS=GNU;;
+esac
 
 # TODO Move personal stuff to prc
 export PASS=TODO
