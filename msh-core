@@ -1036,10 +1036,6 @@ mb() {
 	# Perform regression test
   result=PASSED
   e --- Starting RT
-  if [[ $(mr) != "" ]]; then
-    e mr has output
-    result=FAILED
-  fi
 
 	# Remove work directory
   cd $pwd
@@ -2659,7 +2655,7 @@ if $NEW; then
   echo
   d
 else
-	cd $old_dir
+	d $old_dir
 fi
 NEW=false
 
