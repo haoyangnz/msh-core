@@ -46,6 +46,18 @@
 # td : Todo
 # }}}
 
+#### Initialise {{{
+
+# Record current directory {{{
+
+if ! $NEW; then
+	old_dir=$(pwd)
+fi
+
+# }}}
+
+#}}}
+
 #### ZSH {{{ 
 
 # Color {{{
@@ -1008,7 +1020,8 @@ mc() {
 # MSH : Install
 # mi HaoyangFeng msh-node : Install MSH plugin from HaoyangFeng's github repository msh-node
 mi() {
-	git clone https://github.com/$1/$2 $MSH_PLUGIN
+	git clone https://github.com/$1/$2 $MSH_PLUGIN/$2
+	mr
 }
 
 # MSH : Build
@@ -2599,7 +2612,6 @@ done
 md $MOS_TMP $MOS_TMP/stdout $MOS_TMP/stdbuf $MOS_TMP/stderr
 md $MNT
 md $TRASH $ARCHIVE
-md $DOTMSH $MSH_PLUGIN
 
 # }}}
 
@@ -2633,18 +2645,21 @@ esac
 
 # Load Plugins {{{
 
-for plugin in $(ls $MSH_PLUGIN); do
-	. $MSH_PLUGIN/*.msh
+d $MSH_PLUGIN
+for plugin in $(ls); do
+	. $plugin/*.msh
 done
 
 # }}}
 
-# Goto home {{{
+# Goto home or go back {{{
 
 if $NEW; then
   cs
   echo
   d
+else
+	cd $old_dir
 fi
 NEW=false
 
