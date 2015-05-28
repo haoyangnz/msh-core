@@ -1756,8 +1756,6 @@ done
 
 # General Navigation {{{
 
-export DS=/KIWI/datasets
-export CDS=/KIWI/datasets/Tailim/Paju
 export MODE=VUE
 
 # Selecting the development mode
@@ -1788,185 +1786,12 @@ hd() {
 
 # }}}
 
-# Data Set {{{
-
-# Data Set: Change Data Set
-# cds : Change data set
-cds() {
-  wtl "Changing dataset"
-  crc CDS $(pwd)
-  rm /kiwi/data
-  sc $(pwd)/MAP /kiwi/data
-  jdi $1
-  wtu "Changing dataset [DONE]"
-
-#  if [[ "$TARGET" = *.sql ]]; then
-#    ln -s $DS/sql /kiwi/data
-#    TARGET_DB=$(echo $TARGET | sed s/.sql//)
-#    KWSQL_FILE=$DS/sql/kwsql
-#    rm $KWSQL_FILE
-#    echo "DATA=$TARGET" >> $KWSQL_FILE
-#    echo "HOST=localhost" >> $KWSQL_FILE
-#    echo "INTERFACE=sql" >> $KWSQL_FILE
-#    echo "LOG=error" >> $KWSQL_FILE
-#    echo "LOGPID=1" >> $KWSQL_FILE
-}
-
-# Data Set: Data Sets
-# ds : Go to the data sets directory
-ds() {
-  o $DS
-}
-
-# Data Set: MAP Data Set
-# mds : Go to the MAP data set
-mds() {
-  o $CDS/MAP
-}
-
-# Data Set: Java Data Set
-# vds : Go to the Java data set
-vds() {
-  o $CDS/VUE
-}
-
-
-
-# }}}
-
-# Workflow {{{
-
-upall() {
-  pj
-  svn up
-  jats
-  upjava
-  upmap
-}
-
-# }}}
-
-# Servers {{{
+# SSH {{{
 
 # Server : Haoyangnz
 # hynz : Connect to haoyangnz
 hynz() {
 	ssh haoyangnz.ddns.net
-}
-
-# Server : Calypso
-# calypso : Go to the mounted server calypso
-calypso() {
-  dm calypso
-}
-
-angeline() {
-  ssh angeline.loh@nzdevangelinel2
-}
-
-# Login to nzboom
-# If $1 is defined then upload the file to nzboom shared folder
-boom() {
-  if [[ $1 = "" ]]; then
-    ssh nzboom
-  elif [[ -d $1 ]]; then
-    if [[ $2 = "" ]]; then
-      scp -r $1 nzboom:~/shared
-    else
-      scp -r $1 nzboom:~/shared/$2
-    fi
-  else
-    if [[ $2 = "" ]]; then
-      scp $1 nzboom:~/shared
-    else
-      scp $1 nzboom:~/shared/$2
-    fi
-  fi
-}
-
-support() {
-# tucan4
-  ssh remuser@kiwidev
-}
-
-# Download from boom
-# If $1 is defined then download the file to nzboom shared folder
-boomdl() {
-  dc boom
-	rmu 'nzboom:~/shared/*' .
-}
-
-#TODO Doesn't work
-gromblecollect() {
-  cdd gromble
-  rm -rf *
-  scp -r 'gromble:~/support/nzcollect/$1' .
-}
-
-gromble() {
-  sshpass -p $PASS ssh gromble $@
-}
-
-release() {
-  if [[ $1 = "" ]]; then
-    gromble "find /support/support/revisions/TEST_ONLY/refresh/"
-  else
-    sshpass -p $PASS scp -r ${@:2} gromble:/support/support/revisions/TEST_ONLY/refresh/$1
-  fi
-}
-
-# Release : All
-# releaseall "ssd@nzodie:/src/kiwi_7.91_01mar2014/linux_2.12_kiwi_7.91_140301.140331.rev.tar.gz" 0228
-releaseall() {
-# MAP Revision
-  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/classic/*"
-  work release
-  r *
-  scp $1 .
-  release classic *
-
-# VUE Data
-  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/data/*"
-  vds
-  release vue/data *$2*
-
-# VUE Revision
-  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/*.sh"
-  jid
-  release vue *.sh
-  gromble "rm -rf /support/support/revisions/TEST_ONLY/refresh/vue/windows/*"
-  jwid
-  release vue/windows windows/*
-
-  release
-}
-
-# suboom : Login to nzboom as ssd
-suboom() {
-  ssh ssd@nzboom
-}
-
-# odie : Login to nzodie
-odie() {
-  ssh ssd@nzodie
-}
-
-# 
-kpi() {
-#  ssh kpi@maven "./haoyang_kpi_export.sh"
-  r $COMMON/kpi/*
-  scp "kpi@maven:/home/kpi/haoyang/*.csv" $COMMON/kpi
-#  ooffice $COMMON/kpi/*.csv
-}
-
-# Login to aurora
-aurora() {
-  o $MNT/aurora
-}
-
-# Demo machine
-demo() {
-  ssh ssd@nzjavademomsg
 }
 
 sci() {
@@ -2113,7 +1938,7 @@ sqlte() {
 
 # }}}
 
-# SVN {{{
+# Repository {{{
 unsvn () {
   find . -name ".svn" | xargs /bin/rm -rf
 }
