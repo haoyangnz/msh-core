@@ -2281,23 +2281,6 @@ note() {
 
 #}}}
 
-#### SCD Development {{{
-
-# SCD Navigation {{{
-
-export SPJ_ROOT="$WORK/sycoden"
-export SPJ=ListSum
-if [[ $MODE == "SCD" ]]; then
-  export PJ_ROOT=$SPJ_ROOT
-  export PJ=$SPJ
-fi
-
-alias scd="mode <<< 3"
-
-# }}}
-
-#}}}
-
 #### General Application {{{
 
 # Google Drive {{{
