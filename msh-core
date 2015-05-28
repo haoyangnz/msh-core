@@ -1,4 +1,5 @@
 #### TODO {{{
+# Dynamic Command Composition - Creating vw from v and w, rcap from rca and rcp
 # Split file
 # General de-numbering
 # Globally fix pglc
@@ -7,7 +8,6 @@
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
 # Sensible command names
 # Usage statistics and automatic enhancement recommendation based on usage
-# Dynamic Command Composition - Creating vw from v and w
 # Archiving system
 # Advanced post-command support
 # Completing running task beeps terminal
@@ -1055,7 +1055,7 @@ mp() {
   fi
   pushd .
   cd $MSH
-  ci $1
+  rcap $1
   popd
 }
 
@@ -1701,7 +1701,7 @@ tn() {
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
-        st) e dt $(e $n | cut -c9-);;
+        rs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
 				br) case $2 in 
@@ -2194,27 +2194,57 @@ todo() {
 	gr "TODO "
 }
 
-ci() {
-  if [[ -d .git ]]; then
-    git commit -a -m $1
-		git push
-  fi
-  if [[ -d .svn ]]; then
-    if [[ $(svn st | g "^C") = "" ]]; then
-      svn ci ${@:2} -m $1
-    else
-      echo ci: Couldn\'t commit due to following conflicts
-      svn st | g "^C"
-      return 1
-    fi
-  fi
+# repository : Commit
+# rc "Minor change" : Commit changes with comment "Minor change"
+rc() {
+	case $(rt) in
+		GIT) git commit -m $1;;
+		SVN)
+			if [[ $(svn st | g "^C") = "" ]]; then
+				svn ci ${@:2} -m $1
+			else
+				echo ci: Couldn\'t commit due to following conflicts
+				svn st | g "^C"
+				return 1
+			fi
+			;;
+	esac
 }
 
-cip() {
-  ci $1
-  if [[ -d .git ]]; then
-    git push
-  fi
+# repository : Commit All
+# rca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
+rca() {
+	case $(rt) in
+		GIT) git commit -a -m $1;;
+		SVN) e rca is not supported for SVN;;
+	esac
+}
+
+# Repository : Publish
+# rp : Publish (push) all outstanding commits to upstream
+rp() {
+	case $(rt) in
+		GIT) git push;;
+		SVN) e rp is not supported for SVN;;
+	esac
+}
+
+# Repository : Commit Publish
+# rcp "Minor change" : Commit changes with comment "Minor change" and then publish all outstanding commits
+rcp() {
+	case $(rt) in
+		GIT) rc $1 && rp;;
+		SVN) e rcp is not supported for SVN;;
+	esac
+}
+
+# Repository : Commit All Publish
+# rcap "Minor change" : Commit all changes (including unstaged) with comment "Minor change" and then publish all outstanding commits
+rcap() {
+	case $(rt) in
+		GIT) rca $1 && rp;;
+		SVN) e rcap is not supported for SVN;;
+	esac
 }
 
 co() {
