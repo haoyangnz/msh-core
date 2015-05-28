@@ -18,31 +18,30 @@
 #### Keymap {{{
 # a : 
 # b : 
-# c : 
+# c :
 # d : 
-# e : Explain
+# e : 
 # f : Find
 # g : 
 # h : History
 # i : 
 # j : 
-# k
+# k :
 # l : 
-#*m : MAP
 # m : MSH
-# n
+# n :
 # o : Open
 # p : Print
-# q
-# r : Repository
+# q :
+# r : Remove, Repository
 # s : Search
-# t
-# u
-#*v : Vue
-# w 
-# x
-# y
-# z
+# t :
+# u :
+# v :
+# w :
+# x :
+# y :
+# z :
 # td : Todo
 # }}}
 
@@ -395,6 +394,7 @@ MSH_AUTO_EXCLUDE=true
 MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
 MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
 MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
+MSH_PREFERRED_REPOSITORY_TYPE=GIT
 
 # }}}
 
@@ -2141,13 +2141,26 @@ hs() {
   fi
 }
 
-st() {
-  if [[ -d .git ]]; then
-    git status
-  fi
-  if [[ -d .svn ]]; then
-    pn st "svn status"
-  fi
+# Repository : Type
+# rt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
+rt() {
+	if [[ -d .git && ! -d .svn ]]; then
+		e GIT
+	elif [[ -d .svn && ! -d .git ]]; then
+		e SVN
+	else
+		e $MSH_PREFERRED_REPOSITORY_TYPE
+	fi
+
+}
+
+# Repository : Status
+# rs : Show status of repository
+rs() {
+	case $(rt) in
+		GIT) git status;;
+		SVN) pn st "svn status";;
+	esac
 }
 
 stm() {
