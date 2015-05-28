@@ -1,13 +1,10 @@
 #### TODO {{{
 # Split file
 # General de-numbering
-# cds should back up current vue dataset, and import new vue dataset automatically
 # Globally fix pglc
 # Block stdout for mr
 # Implement directory stack
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
-# Mount MAP rev with sshfs
-# Isolate personal parts from common parts
 # Sensible command names
 # Usage statistics and automatic enhancement recommendation based on usage
 # Dynamic Command Composition - Creating vw from v and w
@@ -37,7 +34,7 @@
 # o : Open
 # p : Print
 # q
-# r
+# r : Repository
 # s : Search
 # t
 # u
@@ -970,6 +967,9 @@ ins() {
 
 export MSH=~/msh
 export MSH_CORE=$MSH/msh-core
+export DOTMSH=~/.msh
+export MSH_PLUGIN=$DOTMSH/plugin
+export MSHRC=~/.mshrc
 
 export RC=$MOS_ROOT/.rc
 export ZSHRC=$RC/.zshrc
@@ -1003,6 +1003,12 @@ mc() {
     vi $MSH_CORE -s "$MOS_TMP/rc1.vi"
   fi
 	mr
+}
+
+# MSH : Install
+# mi HaoyangFeng msh-node : Install MSH plugin from HaoyangFeng's github repository msh-node
+mi() {
+	git clone https://github.com/$1/$2 $MSH_PLUGIN
 }
 
 # MSH : Build
@@ -2174,7 +2180,7 @@ mg() {
 
 # SVN Merge Out Utility
 # mo : Merge out the changes from head branch to base
-mo() {
+rmo() {
   crc MMB $MHD
   crc JMB $JHD
   pj
@@ -2183,7 +2189,7 @@ mo() {
 
 # SVN Merge In Utility
 # mi : Merge in the changes from base to head branch
-mi() {
+rmi() {
   crc MMB $MPJ
   crc JMB $JPJ
   hd
@@ -2441,741 +2447,6 @@ note() {
 
 #}}}
 
-#### Java Development {{{
-
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home
-
-# Java Navigation {{{
-
-export JPJ_ROOT=~/projects
-#export JPJ=mes-excl-8.10
-export JPJ=mes-excl-8.14
-export JPD=$(lnode $JPJ - 1)
-MERGEREV=("mes-8.10" "mes-8.10.1") export MERGEREV
-export JREV=$(e $JPJ | cut -c5-)
-export JHD=mes-8.0
-export JMB=mes-8.0
-export SITE_NAME=$(echo $JPJ | sed "s/[-,\.]/_/g")
-export VDS=$CDS/VUE
-export REBEL_HOME=~/.IdeaIC11/config/plugins/jr-ide-idea/lib/jrebel
-export SV=/kiwi/java/sites
-export CM=/kiwi/java/comms
-export TC=/kiwi/java/tomcat
-export WK=/kiwi/java/work
-export IN=~/installers
-export JSVN="svn+ssh://corona2/svn/mapjava"
-if [[ $MODE == "VUE" ]]; then
-  export SQL_PREFIX=${SITE_NAME}_
-  export SVN=$JSVN
-  export PJ_ROOT=$JPJ_ROOT
-  export PJ=$JPJ
-  export HD=$JHD
-  export MB=$JMB
-  export SVN=$JSVN
-fi
-
-alias vue="mode <<< 1"
-
-# Go to java service directory
-sv() {
-  o $SV
-  if [[ ! -d $SITE_NAME ]]; then
-    wtt "sv not found"
-    return 1
-  fi
-  o $SITE_NAME
-  o current
-  wtt sv
-} 
-
-# Go to java service logs directory
-svl() {
-  o $SV
-  o $SITE_NAME
-  o current
-  o logs
-  wtt svl
-} 
-
-# Go to java tomcat directory
-tc() {
-  o $TC/$SITE_NAME/current
-}
-
-# Go to java comms directory
-cm() {
-  cd $CM
-  cd $SITE_NAME
-}
-
-# Go to java work directory
-wk() {
-  cd $WK
-  cd $SITE_NAME
-}
-
-sss() {
-  if [[ $(pf jvm java jini | wc -l) == 0 ]]; then
-    e DOWN
-  elif [[ $(pf jvm java tomcat jini | wc -l) == 1 ]]; then
-    e UP
-  else
-    e STARTING
-  fi
-}
-
-ssse() {
-  scrond "sss > $MOS_TMP/sss"
-}
-
-# Start java services
-sts() {
-  pwd=$(pwd)
-  mwk
-  evn $SV/$SITE_NAME/current/bin/startservers.sh
-  o $pwd
-}
-
-# Stop java services
-sps() {
-  pk jvm java $SITE_NAME
-}
-
-dps() {
-  dp
-  ss
-}
-
-# Start/Stop java services
-ss() {
-  if [[ $MODE == "SCD" ]]; then
-    pj
-    o src
-		wt ss
-		nodemon server.js
-		wt
-  else
-    sss=$(decolor <<< $(sss))
-    case $sss in
-      DOWN) sts;;
-      *) sps; sts;;
-    esac
-  fi
-}
-
-# Start Scheduler
-# ssc : Start TSS scheduler
-ssc() {
-  sv
-  wtt ssc
-  bin/runpcstssscheduler.sh
-  wtt "ssc[DONE]"
-}
-
-
-# Go to java installers directory
-jind() {
-  o $IN
-  if [[ -d $SITE_NAME ]]; then
-    o $SITE_NAME
-  fi
-}
-
-# rmsite : Removes current java revision installation
-rmsite() {
-  rm -rf $SV/$SITE_NAME
-  rm -rf $WK/$SITE_NAME
-  rm -rf $TC/$SITE_NAME
-	rmsitedb
-}
-rmsitedb() {
-  for db in $(sqlld); do
-    sqlrm $db
-  done
-}
-
-# Java Development: Log
-# lg : Tail logs
-lg() {
-  if [[ $1 = "" ]]; then
-    tail -f logs/*
-  else
-    tail -f logs/$1*.log.txt
-  fi
-}
-
-# Java Development: Log Error
-# lge : Tail logs and monitor for errors
-lge() {
-  lg | g Exception
-}
-
-# Start tomcat debug
-dbt() {
-  pk tomcat
-  export JPDA_ADDRESS=13066
-  export JPDA_TRANSPORT=dt_socket
-  tc
-  bin/catalina.sh jpda run
-}
-
-# Edit java fix time
-fixtime() {
-  vi $SV/$SITE_NAME/current/conf/kiwiplan/time.properties;
-  cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties;
-}
-
-# View latest java comms response
-cmr() {
-  cat kiwi_to_host/$(ls kiwi_to_host -rt | tail -1)
-}
-
-# Clear java comms folders
-cmc() {
-  rm host_to_kiwi/* <<< "y"
-  rm kiwi_to_host/* <<< "y"
-  rm archive/* <<< "y"
-}
-
-# Place java comms request
-cmp() {
-  cp $1 host_to_kiwi
-}
-
-# }}}
-
-# Java Setup {{{
-
-# Java Debug: Debug Java service
-# jdb : Pick Java Service to debug
-jdb() {
-  pn jdb "ls $SV/$SITE_NAME/current/conf/kiwiplan/jini/*.xml"
-}
-
-# Java Setup: Check out Java project
-# jco mes-8.0 : Check out mes-8.0 projects
-jco() {
-  vue
-  pjr
-  mvn project:workspace << EOF
-$SVN/projects/$1
-
-Y
-EOF
-}
-
-jpj() {
-  vue
-  menu 'svn ls $SVN/projects | gv master | g '$1' | sed "s/\///"'
-  crc JPJ $menu
-  if [[ -d $PJ_ROOT/$PJ ]]; then
-    pj
-  else
-    jco $menu
-  fi
-}
-
-# Copy universal java licence file
-# cplic csc : Copy CSC licence to the current directory
-cplic() {
-  cp $COMMON/licence/$1.licence .
-}
-
-jsv() {
-  sps
-  vue
-  menu 'svn ls $SVN/projects | gv master | g '$1' | sed "s/\///"'
-  crc JPJ $menu
-  if ! sv; then
-    jin
-  fi
-  #jdi
-  ss
-}
-
-jstss() {
-	cp $COMMON/roadgrids/* $SV/$SITE_NAME/current/conf/kiwiplan/roadgrids
-  tc
-  d webapps/kp-tss-map-tiles/maptiles
-  sudo mount nzmaptiles.kiwiplan.co.nz:/data/default  .
-}
-
-jtst() {
-	if [[ $1 == "" ]]; then
-		maven build-all || cat target/test-reports/*.txt
-	else
-		testclass=$(find testsrc -name "$1.java" | cut -d "." -f1 | s 's/^testsrc\///g')
-		mvn test -Dtest=$testclass
-	fi
-}
-
-
-jup() {
-  sps
-  jid
-
-# Run installation
-  ./$JPJ-*.sh << EOF
-
-$SITE_NAME
-
- 
-EOF
-  jstss
-  sv
-  sts
-}
-
-jid() {
-  d $IN/$JPJ
-  rmu 'installers@nzjenkins:/data/installers/latestsingleinstaller/'$(echo $JPJ | sed "s/-[^-]*$//")/ . $JPJ'-*'
-  cplic $JPD
-}
-
-jwid() {
-  d $IN/$JPJ
-  if [[ -d windows ]]; then
-    rm -rf windows
-  fi
-  scp -r 'installers@nzjenkins:/home/installers/latest/'$JPJ windows
-}
-
-# Import SQL script to database
-# $2 database dump suffix
-# sqli tailim : Imports mes_8_csc/man_tailim.sql to mes_8_csc/man if java revision is mes-8
-jdi() {
-	jdr $1
-	sv
-	bin/upgrade.sh
-	vds
-	sqlo $1
-}
-
-jdr() {
-	vds
-  sqli $1
-  if [[ -f time.properties ]]; then
-    cp time.properties $SV/$SITE_NAME/current/conf/kiwiplan/time.properties
-    cp $SV/$SITE_NAME/current/conf/kiwiplan/time.properties $TC/$SITE_NAME/current/kiwiconf/kiwiplan/time.properties
-	fi
-}
-
-jinmes() {
-  echo "### Basic
-# Change base?
-n
-# Site name
-$SITE_NAME
-# Offset
-$OFFSET
-# Install
-n
-# Admin password
-admin1
-n
-### Database
-# Hostname
-localhost
-# Super user name
-root
-# Super user password
-root
-# Normal user name
-root
-# Super user password
-root
-# Metric
-y
-$METRIC
-n
-### Comms
-n
-# CSC
-# Change database name?
-n
-# Database failed
-#
-### Manufacturing
-# Change database name?
-n
-# Database failed
-#
-### Completed
-# Configure
-e
-" | gv "#" | ./$JPJ-*.sh
-}
-
-jintss() {
-  mv tss.licence kansas.licence #TODO generate a TSS licence
-  echo "### Basic
-# Change base?
-n
-# Site name
-$SITE_NAME
-# Offset
-$OFFSET
-# Install
-n
-# Admin password
-admin1
-n
-### Database
-# Hostname
-localhost
-# Super user name
-root # Super user password
-root
-# Normal user name
-root
-# Super user password
-root
-# Metric
-y
-$METRIC
-n
-### Manufacturing Classic DB
-#Change database name?
-y
-${SQL_PREFIX}map
-n
-### TSS integration
-# Unit size calculator
-n
-# PCS scheduler configuration
-y
-/kiwi
-
-n
-# TSS DB
-n
-### Completed
-# Configure
-e
-" | gv "#" | ./$JPJ-*.sh
-
-
-
-#  TODO PORT PROBLEM?
-
-  jstss
-
-#  TODO Change pcs properties
-}
-
-# TODO Metric depends on current dataset, cds should configure service
-# Java Setup: Fresh Service Installation
-# jin : Do a fresh installation of the current java revision
-jin() {
-  rmsite
-  jid
-  METRIC=n
-  OFFSET=0
-  case $JPD in
-    mes) jinmes;;
-    tss) jintss;;
-  esac
-}
-
-# Java Setup: Debug Trim
-# jdt : Turn on debug for trim
-jdt() {
-  sv
-  cat $COMMON/haoyang/trim.log | s "s/SITE_NAME/$SITE_NAME/" >> conf/log4j.properties
-}
-
-jdp() {
-	pj
-  modified_projects=("${(@f)$(svn st | grep "^[A-Z] " | grep -v ^X | cut -d " " -f8 | sed "s/src.*//g" | sed "s/test$//g" | sed "s/conf.*//g" | sed "s/pom.xml//g" | sed "s/file.*//g" | sort | uniq)}")
-	e
-	e Projects modified:
-	e
-	for project in $modified_projects; do
-		echo "* $project"
-	done
-	e
-	e ENTER to proceed, C-c to cancel
-	e
-	read
-	for project in $modified_projects; do
-		pj
-		cd $project
-		dp
-	done
-}
-
-jja() {
-	pj
-  modified_projects=("${(@f)$(svn st | grep "^[A-Z] " | grep -v ^X | cut -d " " -f8 | sed "s/src.*//g" | sed "s/test$//g" | sed "s/conf.*//g" | sed "s/pom.xml//g" | sed "s/file.*//g" | sort | uniq)}")
-	e
-	e Projects modified:
-	e
-	for project in $modified_projects; do
-		echo "* $project"
-	done
-	e
-	e ENTER to proceed, C-c to cancel
-	e
-	read
-	for project in $modified_projects; do
-		pj
-		cd $project
-		e;e;e;e;e;
-		e --------------------- BUILDING $project ------------------------
-		e;e;e;e;e;
-		ja || break
-		e;e;e;e;e;
-		e --------------------- FINISHED BUILDING $project ------------------------
-		e;e;e;e;e;
-	done
-}
-
-# Java Commit
-# jci "Comment" : Commit with "Comment" for the current rev, merging to revisions in $MERGEREV
-jci() {
-  wtl "Committing"
-  pj
-  up
-  externals=("${(@f)$(stm | cut -c9- | cut -c-3)}")
-  ci $1 $externals
-  up
-  o ${externals[1]}
-  merge_to_rev=$(svnlog haoyang | head -2 | tail -1 | cut -d " " -f 1 | cut -c2-)
-  for rev in $MERGEREV; do
-    e --- Merging to $rev..
-    pjr
-    o $rev
-    up
-    for external in $externals; do
-      o $external
-      mg $JREV $merge_to_rev
-      o ..
-    done
-    ci $1 $externals
-    up
-  done
-  wtu "Committing [DONE]"
-}
-
-
-# }}}
-
-#}}}
-
-#### MAP Development {{{
-
-# MAP Navigation {{{
-
-export MAP_REV_SRC=boom_base
-export MAP_REV=8.00_01oct2014
-export MAP_DATA_REV=01oct2014
-export MAP_TRUNK=trunk
-export MAP_BRANCH=dev_branches/messaging
-export MPJ_ROOT=~/projects/map
-export MPJ=kiwi_riegelsville
-export MHD=kiwi_head
-export MMB=kiwi_riegelsville
-export MSVN="svn+ssh://corona2/svn/map"
-if [[ $MODE == "MAP" ]]; then
-  export SQL_PREFIX=""
-  export SVN=$MSVN
-  export PJ_ROOT=$MPJ_ROOT
-  export PJ=$MPJ
-  export HD=$MHD
-  export MB=$MMB
-  export SVN=$MSVN
-fi
-
-case $MAP_REV_SRC in
-boom_base)
-  export MAP_REV_SRC_SERVER=nzboom
-  export MAP_REV_SRC_DIR=/src
-  ;;
-boom_haoyang)
-  export MAP_REV_SRC_SERVER=nzboom
-  export MAP_REV_SRC_DIR=~/projects
-  ;;
-aurora)
-  export MAP_REV_SRC_SERVER=aurora
-  export MAP_REV_SRC_DIR=/src
-  ;;
-esac
-
-export MDS=$CDS/MAP
-export KIWIPROGS=/kiwi/progs
-export KIWISQL=/kiwi/sql
-export KIWISCP=/kiwi/scp
-export KIWIBIN=/kiwi/bin
-export KIWIETC=/kiwi/etc
-export KIWIWORK=/kiwi/work
-export KIWISEA=$MDS:$KIWIPROGS:$KIWISQL:$KIWISCP:$KIWIBIN:$KIWIETC:$KIWIWORK
-export LD_LIBRARY_PATH=$KIWIPROGS
-export KWSQL_USER=test
-export KWSQL_PASS=test
-
-
-alias map="mode <<< 2"
-
-# Go to MAP work directory
-mwk() {
-  o $KIWIWORK
-}
-
-# Restore MAP QA ISAM dataset
-rest() {
-  mds
-  r *
-  scp -r "ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1/*" .
-}
-
-# Restore MAP QA SQL dataset
-restsql() {
-  DIR=$DS/rest/$MAP_DATA_REV
-  if [[ ! -f $DIR/test$1.sql ]]; then
-    scp ssd@aurora:/mapqa/master_$MAP_DATA_REV/test$1.sql $DIR
-  fi
-  lndata $DIR/test$1.sql
-}
-
-
-jip() {
-  mwk
-  jimportpaper
-}
-jib() {
-  mwk
-  jimportboard
-}
-jih() {
-  mwk
-  jimporthistory
-}
-jio() {
-  mwk
-  jimportorder
-}
-jiq() {
-  mwk
-  jimportprogset
-}
-pcs() {
-  mwk
-  wtt pcs
-  pcsmenu
-}
-csc() {
-  mwk
-  cscmenu
-}
-xm() {
-  mwk
-  xmgen grp=$1
-}
-ult() {
-  mwk
-  ult00
-}
-rss() {
-  mwk
-  rss01
-}
-xl() {
-  mwk
-  wtt xl
-  echo -e "secr8\n" > .secr8
-  xlmain -i .secr8
-  rm .secr8
-}
-
-# }}}
-
-# MAP Setup {{{
-
-# Update MAP rev
-upmap() {
-  cd /KIWI/revisions
-  if [[ -d kiwi_$MAP_REV ]]; then
-    rm -rf kiwi_$MAP_REV.bak
-    mv kiwi_$MAP_REV kiwi_$MAP_REV.bak
-  fi
-  mkdir kiwi_$MAP_REV
-  cd kiwi_$MAP_REV
-  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/progs progs
-  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/scp scp
-  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/sql sql
-  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/etc etc
-  scp -r ssd@$MAP_REV_SRC_SERVER:$MAP_REV_SRC_DIR/kiwi_$MAP_REV/bin bin
-}
-
-# Change MAP rev
-maprev() {
-  menu "echo 'boom_base\nboom_haoyang'"
-  crc MAP_REV_SRC $menu
-  menu "ssh $MAP_REV_SRC_SERVER ls -1d '$MAP_REV_SRC_DIR/kiwi_*' | sed 's/^.*kiwi_//g'"
-  sed -i -r 's/^export MAP_REV.*$/export MAP_REV='$menu'/gi' $ZSHRC
-  source $ZSHRC
-  rm /kiwi/kiwilink
-  if [[ ! -d /kiwi/revisions/kiwi_$menu ]]; then
-    upmap
-  fi
-  ln -s /kiwi/revisions/kiwi_$menu /kiwi/kiwilink
-}
-
-# Change MAP rev for dataset restores
-mapdatarev() {
-  menu "ssh ssd@felix ls -1d '/mapqa/master_*' | cut -d _ -f 2"
-  sed -i -r 's/^export MAP_DATA_REV.*$/export MAP_DATA_REV='$menu'/gi' $ZSHRC
-  source $ZSHRC
-}
-
-# MAP Setup: MAP Work Cleanup
-# mwc : Clean up MAP work directory by removing temp files
-mwc() {
-  rm *.LS
-  rm *.TM
-  rm *.XXX
-  rm *.LOG
-  rm *.log
-  rm *.LG
-  rm *.LG1
-  rm *.OK
-  rm *.LK
-  rm *.lk
-  rm *.TXT
-  rm *.txt
-  rm trim.log.*
-  rm *.out
-  rm core
-  rm SQLERROR.*
-}
-
-# }}}
-
-# MAP Workflow {{{
-
-mgmess() {
-  m
-  pj && rv && up
-  svn merge -c 11111 $SVN/trunk
-  echo pj
-  hd && rv && up
-  echo hd
-}
-
-# }}}
-
-# MAP Build {{{
-
-# MAP Build: MAP Continuous Integration
-# mci : Show the MAP continuous integration status
-mci() {
-  ssh nzboom ls -lrt /src/CI/logs
-}
-
-#}}}
- 
-#}}}
-
 #### SCD Development {{{
 
 # SCD Navigation {{{
@@ -3328,6 +2599,7 @@ done
 md $MOS_TMP $MOS_TMP/stdout $MOS_TMP/stdbuf $MOS_TMP/stderr
 md $MNT
 md $TRASH $ARCHIVE
+md $DOTMSH $MSH_PLUGIN
 
 # }}}
 
@@ -3356,6 +2628,14 @@ case $OS in
 	GNU) eval $(dircolors ~/.dir_colors);;
 	BSD) eval $(gdircolors ~/.dir_colors) && eval $(ls-colors-linux-to-bsd);;
 esac
+
+# }}}
+
+# Load Plugins {{{
+
+for plugin in $(ls $MSH_PLUGIN); do
+	. $MSH_PLUGIN/*.msh
+done
 
 # }}}
 
