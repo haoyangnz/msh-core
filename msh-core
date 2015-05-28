@@ -1,8 +1,9 @@
 #### TODO {{{
+# Split file
 # General de-numbering
 # cds should back up current vue dataset, and import new vue dataset automatically
 # Globally fix pglc
-# Block stdout for rrc
+# Block stdout for mr
 # Implement directory stack
 # Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
 # Mount MAP rev with sshfs
@@ -31,6 +32,7 @@
 # k
 # l : 
 #*m : MAP
+# m : MSH
 # n
 # o : Open
 # p : Print
@@ -44,7 +46,6 @@
 # x
 # y
 # z
-# rc : Source
 # td : Todo
 # }}}
 
@@ -967,6 +968,9 @@ ins() {
 
 # Configuration Files {{{
 
+export MSH=~/msh
+export MSH_CORE=$MSH/msh-core
+
 export RC=$MOS_ROOT/.rc
 export ZSHRC=$RC/.zshrc
 export VIMRC=$RC/.vimrc
@@ -981,38 +985,44 @@ sc $TMUXRC ~
 sc $MUTTRC ~
 sc $DIRCOLORSRC ~
 
-# Re-source Zsh
-rrc() {
-  source $ZSHRC
+# MSH : Reload
+# mr : Reload MSH
+mr() {
+  source $MSH_CORE
 }
 
-# Configure Zsh
-rc() {
+# MSH : Configure
+# mc : Configure MSH core
+# mc gr : Configure the command 'gr'
+mc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   echo "zR/^$1\(" > $MOS_TMP/rc1.vi
   if [[ $1 = "" ]]; then
-    vi $ZSHRC -s "$MOS_TMP/rc.vi"
+    vi $MSH_CORE -s "$MOS_TMP/rc.vi"
   else
-    vi $ZSHRC -s "$MOS_TMP/rc1.vi"
+    vi $MSH_CORE -s "$MOS_TMP/rc1.vi"
   fi
-  source $ZSHRC
+	mr
 }
 
-# Regression Test RC
-rtrc() {
-# Prepare work directory
+# MSH : Build
+# mb : Run tests on the current MSH library
+mb() {
+	# Prepare work directory
   pwd=$(pwd)
   sb
   d rt
   cs
-# Perform regression test
+
+	# Perform regression test
   result=PASSED
   e --- Starting RT
-  if [[ $(rrc) != "" ]]; then
-    e rrc has output
+  if [[ $(mr) != "" ]]; then
+    e mr has output
     result=FAILED
   fi
-# Remove work directory
+
+	# Remove work directory
   cd $pwd
   if [[ $result == "FAILED" ]]; then
     e --- RT FAILED
@@ -1021,40 +1031,31 @@ rtrc() {
   e --- RT PASSED
 }
 
-# Commit and push configuration files
-circ() {
-  if ! rtrc; then
-    e Commit ommitted due to RT failure.
+# MSH : Publish
+# mp "New command gr" : Commit and push MSH library changes to upstream if build succeeds
+mp() {
+  if ! mb; then
+    e Commit ommitted due to build failure.
     return
   fi
   pushd .
-  cd $RC
+  cd $MSH
   ci $1
-  git push origin master
   popd
 }
 
-# Commit and push configuration files
-ciarc() {
-  pushd .
-  cd $RC
-  cia $1
-  git push -f origin master
-  popd
-}
-
-# Help: Keyword function help
-# h func : List all function documentation with the keyword func
-h() {
-  pattern="#.*$(kw $@)"
-  cat $ZSHRC | gv "\(\)" | gv "^$" | gv "\{\{\{" | g -C1 "$pattern"
-}
-
-# Help: Full precise function help
-# fh func : Show the documentation and code of function func
-fh() {
-  cat $ZSHRC | gc "^$1\(" -B2 | head -2
+# MSH : Help
+# mh gr : Show the documentation and code of command gr
+mh() {
+  cat $MSH_CORE | gc "^$1\(" -B2 | head -2
   w $1
+}
+
+# # MSH : List
+# ml grep : List all command documentation with the keyword grep
+ml() {
+  pattern="#.*$(kw $@)"
+  cat $MSH_CORE | gv "\(\)" | gv "^$" | gv "\{\{\{" | g -C1 "$pattern"
 }
 
 # TODO seem to erase MAP_REV_SOURCE to MAP_REV
@@ -1062,7 +1063,7 @@ fh() {
 crc() {
   rep=$(echo $2 | esr)
   sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
-  rrc
+  mr
 }
 
 # Configure Vi
@@ -1109,7 +1110,7 @@ b() {
 
 std() {
 
-  rrc
+  mr
 
   if [[ $1 = "" ]]; then
     tmux kill-server
