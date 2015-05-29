@@ -97,6 +97,7 @@ _stp() {
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $GREEN MOS: $FINISH
 }
 
 # Window Title
@@ -597,7 +598,7 @@ PAGER_SIZE=15
 # pgp : Print the current page
 pgp() {
   cs && echo
-  e $MAGENTA $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BLUE}Selected:$SI$FINISH
+  e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BRRED}Selected:$SI$FINISH
   catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
 
@@ -1223,7 +1224,7 @@ al() {
   awk "NR >= $1 && NR <= $2 && ( $SNA ) {printf selected}
        NR >= $1 && NR <= $2 && NR % 2 == 0 {print altbg \$0 finish}
        NR >= $1 && NR <= $2 && NR % 2 == 1 {print \$0}" \
-       selected=$BLUE altbg=$BGWHITE finish=$FINISH
+       selected=$BRRED altbg=$BGWHITE finish=$FINISH
 }
 
 # Process : Process Line
