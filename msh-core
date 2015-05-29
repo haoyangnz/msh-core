@@ -1793,6 +1793,18 @@ hd() {
   fi
 }
 
+# Go to service directory
+sv() {
+  o $SV_ROOT
+  if [[ ! -d $SV ]]; then
+    wtt "sv not found"
+    return 1
+  fi
+  o $SV
+  o current
+  wtt sv
+} 
+
 # }}}
 
 # SSH {{{
