@@ -2165,7 +2165,7 @@ hs() {
 # Repository : Type
 # rt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
 rt() {
-	if [[ -d .git && ! -d .svn ]]; then
+	if evn "git rev-parse --git-dir"; then
 		e GIT
 	elif [[ -d .svn && ! -d .git ]]; then
 		e SVN
