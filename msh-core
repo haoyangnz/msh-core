@@ -159,10 +159,9 @@ msh-guess() {
 			else
 				MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
 			fi
-			MSH_GUESS+=" ?"
 		fi
 		BUFFER+="
- MSH: $MSH_GUESS"
+ MSH: $MSH_GUESS ?"
 		region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
 }
 
