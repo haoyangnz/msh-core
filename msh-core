@@ -88,7 +88,7 @@ add-zsh-hook precmd msh-assist
 _stp() {
   #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(rt) | $MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(rt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
