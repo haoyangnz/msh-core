@@ -31,7 +31,7 @@
 # m : MSH
 # n :
 # o : Open
-# p : Print
+# p : Print, Process
 # q :
 # r : Remove, Repository
 # s : Search
@@ -80,16 +80,15 @@ PFINISH="%{$terminfo[sgr0]%}"
 
 autoload -U add-zsh-hook
 
-#add-zsh-hook precmd o_precmd
+add-zsh-hook precmd msh-assist
 #add-zsh-hook preexec o_preexec
 
-o_preexec() {
-}
-
-top_prompt() {
+# (Internal) Shell : Top Prompt
+# _stp : Show top prompt
+_stp() {
   #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
-  e " ${BRCYAN}MSH-$$${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
+  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(rt) | $MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
@@ -139,24 +138,31 @@ wtt() {
   fi
 }
 
+# (Internal) MSH : Assist
+msh-assist() {
+	e
+	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $MAGENTA MSH: $MSH_ASSIST $FINISH
+	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+}
+
 # TODO Tab to expand current word - progress guess
 msh-guess() {
-  BUFFER=$(echo $BUFFER | head -1)
-  BUFFER_CHAR=$(echo $BUFFER | wc -c)
-  if [[ $BUFFER == "" ]]; then
-    MSH_GUESS="Hello"
-  else
-    if ! evn "e \"$BUFFER\" | g \" \"" && evn "lfd $MSH_GUESS_INDEX $BUFFER*"; then
-      MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $BUFFER*")
-    #elif evn "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*"; then
-    #  MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*")
-    else
-      MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
-    fi
-  fi
-  BUFFER+="
- MSH: $MSH_GUESS ?"
-  region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
+	BUFFER=$(echo $BUFFER | head -1)
+		BUFFER_CHAR=$(echo $BUFFER | wc -c)
+		if [[ $BUFFER != "" ]]; then
+			if ! evn "e \"$BUFFER\" | g \" \"" && evn "lfd $MSH_GUESS_INDEX $BUFFER*"; then
+				MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $BUFFER*")
+#			elif evn "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*"; then
+#			  MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*")
+			else
+				MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
+			fi
+			MSH_GUESS+=" ?"
+		fi
+		BUFFER+="
+ MSH: $MSH_GUESS"
+		region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
 }
 
 msh-guess-first() {
@@ -294,9 +300,7 @@ msh-backward() {
 zle -N msh-backward
 bindkey "^B" msh-backward
 
-PROMPT="
-${PBRCYAN}-------------------------------------------------------------------------------------------------------${PFINISH}
-${PBLUE} USR: ${PFINISH}"
+PROMPT="${PBLUE} USR: ${PFINISH}"
 RPROMPT="${PBRCYAN}%/${PFINISH}"
 
 # }}}
@@ -640,7 +644,7 @@ vt() {
 # Clear Screen
 cs() {
   clear
-  top_prompt
+  _stp
 }
 
 msh-clear() {
@@ -1449,6 +1453,11 @@ d() {
   touch -a $1
   builtin cd $1
   l
+	case $(rt) in
+		GIT) MSH_ASSIST="We're in a git repository.";;
+		SVN) MSH_ASSIST="We're in a svn repository.";;
+		N/A) MSH_ASSIST="We're not in a repository.";;
+	esac
 }
 
 # Disk : Usage
@@ -2148,6 +2157,8 @@ rt() {
 		e GIT
 	elif [[ -d .svn && ! -d .git ]]; then
 		e SVN
+	elif [[ ! -d .svn && ! -d .git ]]; then
+		e N/A
 	else
 		e $MSH_PREFERRED_REPOSITORY_TYPE
 	fi
@@ -2160,6 +2171,7 @@ rs() {
 	case $(rt) in
 		GIT) git status;;
 		SVN) pn st "svn status";;
+		N/A) e current directory not under version control;;
 	esac
 }
 
@@ -2208,6 +2220,7 @@ rc() {
 				return 1
 			fi
 			;;
+		N/A) e current directory not under version control;;
 	esac
 }
 
@@ -2217,6 +2230,7 @@ rca() {
 	case $(rt) in
 		GIT) git commit -a -m $1;;
 		SVN) e rca is not supported for SVN;;
+		N/A) e current directory not under version control;;
 	esac
 }
 
@@ -2226,6 +2240,7 @@ rp() {
 	case $(rt) in
 		GIT) git push;;
 		SVN) e rp is not supported for SVN;;
+		N/A) e current directory not under version control;;
 	esac
 }
 
@@ -2235,6 +2250,7 @@ rcp() {
 	case $(rt) in
 		GIT) rc $1 && rp;;
 		SVN) e rcp is not supported for SVN;;
+		N/A) e current directory not under version control;;
 	esac
 }
 
@@ -2244,6 +2260,7 @@ rcap() {
 	case $(rt) in
 		GIT) rca $1 && rp;;
 		SVN) e rcap is not supported for SVN;;
+		N/A) e current directory not under version control;;
 	esac
 }
 
