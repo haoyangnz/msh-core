@@ -512,8 +512,8 @@ kw() {
 # Text Manipulation: Full PascalCase Abbreviation
 # Form a regex for full PascalCase abbreviation
 ab() {
-  var=`echo $1 | sed 's/./&[^A-Z]*/g'`
-  echo $var
+  var=`echo $1 | sed 's/./&[abcdefghijklmnopqrstuvwxyz]*/g'`
+  echo "${var}\..*"
 }
 
 # Form a regex for partial abbreviation
@@ -1349,6 +1349,11 @@ fl() {
 
 # Find by full file name
 f() {
+	if [[ $2 == '' ]]; then
+		fdir="."
+	else
+		fdir=$2
+	fi
   if $MSH_AUTO_EXCLUDE; then
     pn f "find $2 -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
   else
@@ -1363,12 +1368,12 @@ fp() {
 
 # Find source by full PascalCase abbreviated name
 fa() {
-  fs $(ab $1)
+  f $(ab $1)
 }
 
 # Find source by partial PascalCase abbreviated name
 fpa() {
-  fps $(pab $1)
+  f $(pab $1)
 }
 
 # }}}
@@ -1701,7 +1706,6 @@ tn() {
         f) e o $n;;
         fa) e o $n;;
         fp) e o $n;;
-        fps) e o $n;;
         fpa) e o $n;;
         tca) e vimdiff $n $PJ_ROOT/$MB/$n;;
         oh) e o $(rnode $n " " 0);;
