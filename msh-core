@@ -1026,7 +1026,7 @@ mc() {
 # mpc java b : Configure command 'b'
 mpc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
-  echo "zR/^$1\(" > $MOS_TMP/rc1.vi
+  echo "zR/^$2\(" > $MOS_TMP/rc1.vi
   if [[ $2 = "" ]]; then
     vi $MSH_PLUGIN/msh-$1/$1.msh -s "$MOS_TMP/rc.vi"
   else
