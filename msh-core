@@ -1121,9 +1121,14 @@ ml() {
 # TODO seem to erase MAP_REV_SOURCE to MAP_REV
 # Change variable in Zsh source
 crc() {
-  rep=$(echo $2 | esr)
-  sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $ZSHRC
-  mr
+	if [[ $3 == "" ]]; then
+		rc_file = $ZSHRC
+	else
+		rc_file = $MSH_PLUGIN/msh-$3/$3.msh
+	fi
+	rep=$(echo $2 | esr)
+	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
+	mr
 }
 
 # Configure Vi
