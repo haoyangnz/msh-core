@@ -1021,6 +1021,20 @@ mc() {
 	mr
 }
 
+# MSH : Plugin Configure
+# mpc java : Configure msh-java plugin
+# mpc java b : Configure command 'b'
+mpc() {
+  echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
+  echo "zR/^$1\(" > $MOS_TMP/rc1.vi
+  if [[ $2 = "" ]]; then
+    vi $MSH_PLUGIN/msh-$1/$1.msh -s "$MOS_TMP/rc.vi"
+  else
+    vi $MSH_PLUGIN/msh-$1/$1.msh -s "$MOS_TMP/rc1.vi"
+  fi
+	mr
+}
+
 # MSH : Install
 # mi HaoyangFeng msh-node : Install MSH plugin from HaoyangFeng's github repository msh-node
 mi() {
@@ -1050,6 +1064,24 @@ mb() {
   e --- RT PASSED
 }
 
+# MSH : Configuration Diff
+# mcd : Show diff for MSH library changes
+mcd() {
+  pushd .
+  cd $MSH
+	dt
+  popd
+}
+
+# MSH : Plugin Configuration Diff
+# mpcd java : Show diff for msh-java plugin changes
+mpcd() {
+  pushd .
+  cd $MSH_PLUGIN/msh-$1
+	dt
+  popd
+}
+
 # MSH : Publish
 # mp "New command gr" : Commit and push MSH library changes to upstream if build succeeds
 mp() {
@@ -1060,6 +1092,15 @@ mp() {
   pushd .
   cd $MSH
   rcap $1
+  popd
+}
+
+# MSH : Plugin Publish
+# mpp java "New command b" : Commit and push MSH plugin changes to upstream if build succeeds
+mpp() {
+  pushd .
+  cd $MSH_PLUGIN/msh-$1
+  rcap $2
   popd
 }
 
