@@ -398,7 +398,7 @@ MSH_AUTO_EXCLUDE=true
 MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
 MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
 MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
-MSH_PREFERRED_REPOSITORY_TYPE=GIT
+MSH_PREFERRED_REPOSITORY_TYPE=SVN
 
 # }}}
 
@@ -1122,9 +1122,9 @@ ml() {
 # Change variable in Zsh source
 crc() {
 	if [[ $3 == "" ]]; then
-		rc_file = $ZSHRC
+		rc_file=$ZSHRC
 	else
-		rc_file = $MSH_PLUGIN/msh-$3/$3.msh
+		rc_file=$MSH_PLUGIN/msh-$3/$3.msh
 	fi
 	rep=$(echo $2 | esr)
 	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
@@ -2215,11 +2215,11 @@ hs() {
 # Repository : Type
 # rt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
 rt() {
-	if evn "git rev-parse --git-dir"; then
+	if [[ ! -d .svn ]] && evn "git rev-parse --git-dir" ; then
 		e GIT
-	elif [[ -d .svn && ! -d .git ]]; then
+	elif [[ -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
 		e SVN
-	elif [[ ! -d .svn && ! -d .git ]]; then
+	elif [[ ! -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
 		e N/A
 	else
 		e $MSH_PREFERRED_REPOSITORY_TYPE
