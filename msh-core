@@ -264,6 +264,12 @@ msh-accept-guess() {
 zle -N msh-accept-guess
 bindkey "^@" msh-accept-guess
 
+msh-expand-guess() {
+	BUFFER=$MSH_GUESS
+}
+zle -N msh-expand-guess
+bindkey "^G" msh-expand-guess
+
 msh-new-command() {
 # Remove guess
   BUFFER=$(echo $BUFFER | head -1)
@@ -398,7 +404,7 @@ MSH_AUTO_EXCLUDE=true
 MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
 MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
 MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
-MSH_PREFERRED_REPOSITORY_TYPE=SVN
+MSH_PREFERRED_REPOSITORY_TYPE=GIT
 
 # }}}
 
