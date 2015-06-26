@@ -251,6 +251,9 @@ msh-enter() {
     BUFFER=$LAST_BUFFER
     if which $(lnode $BUFFER " " 1) &> /dev/null; then
       e $BUFFER >> $MSH_HISTCMD
+		else
+			BUFFER="o *${BUFFER}*"
+			zle expand-word
     fi
   fi
   zle accept-line
