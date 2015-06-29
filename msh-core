@@ -914,7 +914,7 @@ sc() {
 # m * "*.tar" : add .tar after all files
 m() {
 	if [[ $@[-1] == *"*"* ]]; then
-		mtp ${@:1:-1} "$(echo $f | sr \* \$f)"
+		mtp ${@:1:-1} "$(echo $@[-1] | sr \* \$f)"
 	else
 		mv ${@:1:-1} $@[-1]
 	fi
