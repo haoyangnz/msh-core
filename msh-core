@@ -916,6 +916,13 @@ m() {
   l
 }
 
+# Move: Move Make Directory
+# mmd a b c : Make directory c, and move a and b to c
+mmd() {
+	md $@[-1]
+	m $@
+}
+
 # Move : Move Shortcut
 # ml a b c : Move a and b to c, and create symbolic links from a and b to c/a and c/b
 ms() {
@@ -1547,7 +1554,7 @@ df() {
 # Open : Open File Type (Variable)
 # OPT=(png eog) : "o a.png" executes "eog a.png"
 typeset -A OFT
-OFT=(png eog jpg eog pdf evince zip uz gz uz jar oj)
+OFT=(png eog jpg eog pdf evince zip uz tar uz gz uz jar oj)
 
 # Open : Open
 # o a : Go to into directory or open file in Vi
