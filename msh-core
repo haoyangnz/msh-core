@@ -28,7 +28,7 @@
 # j : 
 # k :
 # l : 
-# m : MSH
+# m : Move, MSH
 # n :
 # o : Open
 # p : Print, Process
@@ -911,12 +911,17 @@ sc() {
 
 # Move : Move
 # m a b c : Move a and b to c
+# m * "*.tar" : add .tar after all files
 m() {
-  mv ${@:1:-1} $@[-1]
+	if [[ $@[-1] == *"*"* ]]; then
+		for match in ${@:1:-1}; do eve "mv $match $(echo $@[-1] | sr \* \$match)"; done
+	else
+		mv ${@:1:-1} $@[-1]
+	fi
   l
 }
 
-# Move: Move Make Directory
+# Move : Move Make Directory
 # mmd a b c : Make directory c, and move a and b to c
 mmd() {
 	md $@[-1]
@@ -1303,13 +1308,19 @@ pl() {
 
 # Sed {{{
 
-# Sed Utility: Sed
+# Sed : Sed
 # s : Sed
 s() {
   sed $@
 }
 
-# Sed Utility: inline
+# Sed : Sed Replace
+# sr a b : Replace a with b
+sr() {
+	sed "s/$1/$2/g"
+}
+
+# Sed : Sed Inline
 # si : Sed inline
 si() {
   sed -i $@
