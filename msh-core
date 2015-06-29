@@ -914,11 +914,19 @@ sc() {
 # m * "*.tar" : add .tar after all files
 m() {
 	if [[ $@[-1] == *"*"* ]]; then
-		for match in ${@:1:-1}; do eve "mv $match $(echo $@[-1] | sr \* \$match)"; done
+		mtp ${@:1:-1} "$(echo $f | sr \* \$f)"
 	else
 		mv ${@:1:-1} $@[-1]
 	fi
   l
+}
+
+# Move : Move Text Process
+# mm *man* "$(echo $f | sr man mapman)" : Replace *man* with *mapman*
+mtp() {
+	for f in ${@:1:-1}; do
+		eve "mv $f $@[-1]";
+	done
 }
 
 # Move : Move Make Directory
