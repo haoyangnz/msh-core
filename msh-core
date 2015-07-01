@@ -1,4 +1,5 @@
 #### TODO {{{
+# Fix mtp
 # Dynamic Command Composition - Creating vw from v and w, rcap from rca and rcp
 # Split file
 # General de-numbering
@@ -914,7 +915,7 @@ sc() {
 # m * "*.tar" : add .tar after all files
 m() {
 	if [[ $@[-1] == *"*"* ]]; then
-		mtp ${@:1:-1} '$(echo $@[-1] | sr \* \$f)'
+		mtp ${@:1:-1} "$(echo $@[-1] | sr \* \$f)"
 	else
 		mv ${@:1:-1} $@[-1]
 	fi
@@ -922,10 +923,11 @@ m() {
 }
 
 # Move : Move Text Process
-# mm *man* '$(echo $f | sr man mapman)' : Replace *man* with *mapman*
+# mm *man* "$(echo \$f | sr man mapman)" : Replace *man* with *mapman*
 mtp() {
 	for f in ${@:1:-1}; do
-		eve "mv $f $@[-1]";
+		e "mv $f $@[-1]"
+		eve "mv $f $@[-1]"
 	done
 }
 
