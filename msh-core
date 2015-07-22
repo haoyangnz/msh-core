@@ -1829,10 +1829,10 @@ tn() {
         rs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
-				br) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e brt $(echo $n | s 's/remotes.origin.//g'); else e sw $n; fi;;
-								d) e brd $(e $n | s 's/\*//g');;
-								r) e brd $(e $n | s 's/\*//g');;
+				vb) case $2 in 
+								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | s 's/remotes.origin.//g'); else e sw $n; fi;;
+								d) e vbd $(e $n | s 's/\*//g');;
+								r) e vbd $(e $n | s 's/\*//g');;
 						esac;;
         *) echo Done nothing.;;
     esac
@@ -2117,7 +2117,7 @@ rv() {
 sw() {
   if [[ -d .git ]]; then
 		git checkout $1
-		br
+		vb
 	fi
   if [[ -d .svn ]]; then
 		svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
@@ -2217,54 +2217,70 @@ svndi() {
   svn di -c $1 *
 }
 
+# Version Control : Branch
 vb() {
 	case $(rt) in
-		GIT) pn br "git branch --color -a $@";;
+		GIT) pn vb "git branch --color -a $@";;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
 	esac
 }
 
-bru() {
-	if [[ -d .git ]]; then
-		git push -u origin $(brcur)
-	fi
+# Version Control : Branch Publish
+vbp() {
+	case $(rt) in
+		GIT) git push -u origin $(vbc);;
+		N/A) e current directory not under version control;;
+		*) e vbp is not supported for your repository type;;
+	esac
 }
 
-brt() {
-	if [[ -d .git ]]; then
-		git checkout -b $1 origin/$1
-		br
-	fi
+# Version Control : Branch New
+vbn() {
+	case $(rt) in
+		GIT) git checkout -b $@;;
+		N/A) e current directory not under version control;;
+		*) e vbn is not supported for your repository type;;
+	esac
+	vb
 }
 
-brn() {
-	if [[ -d .git ]]; then
-		git checkout -b $@
-	fi
-	br
+# Version Control : Branch Checkout
+vbc() {
+	case $(rt) in
+		GIT) git checkout -b $1 origin/$1;;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
 }
 
-# Repository Branch : Delete
-brd() {
-	if [[ -d .git ]]; then
-		if [[ $1 == $(brcur) ]]; then
-			# Trying to delete current branch, switch to master first
-			git checkout master
-			git branch -D $@
-		else
-			git branch -D $@
-		fi
-	fi
-	br
+# Version Control : Branch Delete
+vbd() {
+	case $(rt) in
+		GIT) 
+			if [[ $1 == $(vbc) ]]; then
+				# Trying to delete current branch, switch to master first
+				git checkout master
+				git branch -D $@
+			else
+				git branch -D $@
+			fi
+			;;
+		N/A) e current directory not under version control;;
+		*) e vbd is not supported for your repository type;;
+	esac
+	vb
 }
 
-# Repository Branch : Current 
-# Get current branch name
-brcur() {
-	if [[ -d .git ]]; then
-		git branch | grep ^\* | cut -d" " -f2
-	fi
+# Version Control : Branch Current
+# vbc : Get current branch name
+vbc() {
+	case $(rt) in
+		GIT) git branch | grep ^\* | cut -d" " -f2;;
+		N/A) e current directory not under version control;;
+		*) e vbc is not supported for your repository type;;
+	esac
 }
 
 # Repository History : Simple
