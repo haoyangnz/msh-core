@@ -2217,10 +2217,12 @@ svndi() {
   svn di -c $1 *
 }
 
-br() {
-	if [[ -d .git ]]; then
-		pn br "git branch --color -a $@"
-	fi
+vb() {
+	case $(rt) in
+		GIT) pn br "git branch --color -a $@";;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
 }
 
 bru() {
