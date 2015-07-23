@@ -1,6 +1,6 @@
 #### TODO {{{
 # Fix mtp
-# Dynamic Command Composition - Creating vw from v and w, rcap from rca and rcp
+# Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp
 # Split file
 # General de-numbering
 # Globally fix pglc
@@ -34,11 +34,11 @@
 # o : Open
 # p : Print, Process
 # q :
-# r : Remove, Repository
+# r : Remove
 # s : Search
 # t :
 # u :
-# v :
+# v : Version Control
 # w :
 # x :
 # y :
@@ -103,7 +103,7 @@ add-zsh-hook precmd msh-assist
 _stp() {
   #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
   e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(rt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
+  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(vt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
@@ -654,9 +654,9 @@ p() {
 
 # System functions {{{
 
-# Verbal Test
-# vt "[[ -a src ]]" : Test if src exists, and print the result
-vt() {
+# Shell : Test
+# st "[[ -a src ]]" : Test if src exists, and print the result
+st() {
   eval $1 && e \"$1\" is true || e \"$1\" is false
 }
 
@@ -1131,7 +1131,7 @@ mp() {
   fi
   pushd .
   cd $MSH
-  rcap $1
+  vcap $1
   popd
 }
 
@@ -1140,7 +1140,7 @@ mp() {
 mpp() {
   pushd .
   cd $MSH_PLUGIN/msh-$1
-  rcap $2
+  vcap $2
   popd
 }
 
@@ -1570,7 +1570,7 @@ d() {
   touch -a $1
   builtin cd $1
   l
-	case $(rt) in
+	case $(vt) in
 		GIT) MSH_ASSIST="We're in a git repository.";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not in a repository.";;
@@ -1707,17 +1707,6 @@ vf() {
   rn 1
 }
 
-# Find by partial name and open with Vi
-vp() {
-  vf $1
-  rn 1
-}
-
-# Find source by full name and open with Vi
-vs() {
-  vi $(fs $1 | unl)
-}
-
 # Find source by partial name and open with Vi
 vps() {
   vi $(fps $1 | unl)
@@ -1826,7 +1815,7 @@ tn() {
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
-        rs) e dt $(e $n | cut -c9-);;
+        vs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
@@ -2075,7 +2064,7 @@ sqlte() {
 
 # }}}
 
-# Repository {{{
+# Version Control {{{
 unsvn () {
   find . -name ".svn" | xargs /bin/rm -rf
 }
@@ -2219,7 +2208,7 @@ svndi() {
 
 # Version Control : Branch
 vb() {
-	case $(rt) in
+	case $(vt) in
 		GIT) pn vb "git branch --color -a $@";;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
@@ -2228,7 +2217,7 @@ vb() {
 
 # Version Control : Branch Publish
 vbp() {
-	case $(rt) in
+	case $(vt) in
 		GIT) git push -u origin $(vbc);;
 		N/A) e current directory not under version control;;
 		*) e vbp is not supported for your repository type;;
@@ -2237,7 +2226,7 @@ vbp() {
 
 # Version Control : Branch New
 vbn() {
-	case $(rt) in
+	case $(vt) in
 		GIT) git checkout -b $@;;
 		N/A) e current directory not under version control;;
 		*) e vbn is not supported for your repository type;;
@@ -2247,7 +2236,7 @@ vbn() {
 
 # Version Control : Branch Checkout
 vbc() {
-	case $(rt) in
+	case $(vt) in
 		GIT) git checkout -b $1 origin/$1;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
@@ -2257,7 +2246,7 @@ vbc() {
 
 # Version Control : Branch Delete
 vbd() {
-	case $(rt) in
+	case $(vt) in
 		GIT) 
 			if [[ $1 == $(vbc) ]]; then
 				# Trying to delete current branch, switch to master first
@@ -2276,29 +2265,30 @@ vbd() {
 # Version Control : Branch Current
 # vbc : Get current branch name
 vbc() {
-	case $(rt) in
+	case $(vt) in
 		GIT) git branch | grep ^\* | cut -d" " -f2;;
 		N/A) e current directory not under version control;;
 		*) e vbc is not supported for your repository type;;
 	esac
 }
 
-# Repository History : Simple
-hss() {
+# Version Control : History Simple
+vhs() {
   if [[ -d .git ]]; then
     git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@
   fi
 }
 	
-hs() {
+# Version Control : History
+vh() {
   if [[ -d .git ]]; then
     git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@
   fi
 }
 
-# Repository : Type
-# rt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
-rt() {
+# Version Control : Type
+# vt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
+vt() {
 	if [[ ! -d .svn ]] && evn "git rev-parse --git-dir" ; then
 		e GIT
 	elif [[ -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
@@ -2311,10 +2301,10 @@ rt() {
 
 }
 
-# Repository : Status
-# rs : Show status of repository
-rs() {
-	case $(rt) in
+# Version Control : Status
+# vs : Show status of repository
+vs() {
+	case $(vt) in
 		GIT) git status;;
 		SVN) pn st "svn status";;
 		N/A) e current directory not under version control;;
@@ -2325,9 +2315,9 @@ stm() {
   svn st | g ^M
 }
 
-# Repository : Diff Simple
-# rds : Show simple repository diff
-rds() {
+# Version Control : Diff Simple
+# vds : Show simple repository diff
+vds() {
 	if [[ -d .git ]]; then
 		git diff $@
 	fi
@@ -2355,7 +2345,7 @@ todo() {
 # repository : Commit
 # rc "Minor change" : Commit changes with comment "Minor change"
 rc() {
-	case $(rt) in
+	case $(vt) in
 		GIT) git commit -m $1;;
 		SVN)
 			if [[ $(svn st | g "^C") = "" ]]; then
@@ -2370,42 +2360,42 @@ rc() {
 	esac
 }
 
-# repository : Commit All
-# rca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
-rca() {
-	case $(rt) in
+# Version Control : Commit All
+# vca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
+vca() {
+	case $(vt) in
 		GIT) git commit -a -m $1;;
-		SVN) e rca is not supported for SVN;;
+		SVN) e vca is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
 }
 
-# Repository : Publish
-# rp : Publish (push) all outstanding commits to upstream
-rp() {
-	case $(rt) in
+# Version Control : Publish
+# vp : Publish (push) all outstanding commits to upstream
+vp() {
+	case $(vt) in
 		GIT) git push;;
-		SVN) e rp is not supported for SVN;;
+		SVN) e vp is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
 }
 
-# Repository : Commit Publish
-# rcp "Minor change" : Commit changes with comment "Minor change" and then publish all outstanding commits
-rcp() {
-	case $(rt) in
-		GIT) rc $1 && rp;;
-		SVN) e rcp is not supported for SVN;;
+# Version Control : Commit Publish
+# vcp "Minor change" : Commit changes with comment "Minor change" and then publish all outstanding commits
+vcp() {
+	case $(vt) in
+		GIT) rc $1 && vp;;
+		SVN) e vcp is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
 }
 
-# Repository : Commit All Publish
-# rcap "Minor change" : Commit all changes (including unstaged) with comment "Minor change" and then publish all outstanding commits
-rcap() {
-	case $(rt) in
-		GIT) rca $1 && rp;;
-		SVN) e rcap is not supported for SVN;;
+# Version Control : Commit All Publish
+# vcap "Minor change" : Commit all changes (including unstaged) with comment "Minor change" and then publish all outstanding commits
+vcap() {
+	case $(vt) in
+		GIT) vca $1 && vp;;
+		SVN) e vcap is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
 }
