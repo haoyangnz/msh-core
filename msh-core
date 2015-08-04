@@ -2314,16 +2314,28 @@ vbc() {
 
 # Version Control : History Simple
 vhs() {
-  if [[ -d .git ]]; then
-    git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@
-  fi
+	case $(vt) in
+		GIT) 
+			if [[ -d .git ]]; then
+				git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@
+			fi
+			;;
+		N/A) e current directory not under version control;;
+		*) e vhs is not supported for your repository type;;
+	esac
 }
 	
 # Version Control : History
 vh() {
-  if [[ -d .git ]]; then
-    git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@
-  fi
+	case $(vt) in
+		GIT) 
+			if [[ -d .git ]]; then
+				git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@
+			fi
+			;;
+		N/A) e current directory not under version control;;
+		*) e vh is not supported for your repository type;;
+	esac
 }
 
 # Version Control : Type
