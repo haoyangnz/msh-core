@@ -164,20 +164,42 @@ msh-assist() {
 
 # TODO Tab to expand current word - progress guess
 msh-guess() {
-	BUFFER=$(echo $BUFFER | head -1)
-		BUFFER_CHAR=$(echo $BUFFER | wc -c)
-		if [[ $BUFFER != "" ]]; then
-			if [[ "$(echo *${BUFFER}*)" != "*${BUFFER}*" ]] && evn "lfd $MSH_GUESS_INDEX *$BUFFER*"; then
-				MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX *$BUFFER*")
+	USR_INPUT=$(echo $BUFFER | head -1)
+	BUFFER=$USR_INPUT
+
+	if [[ $BUFFER == "" ]]; then
+		unset MSH_GUESS
+		unset MSH_HELP
+	else
+# Try to match a file
+		if [[ "$(echo *${BUFFER}*)" != "*${BUFFER}*" ]] && evn "lfd $MSH_GUESS_INDEX *$BUFFER*"; then
+			MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX *$BUFFER*")
 #			elif evn "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*"; then
 #			  MSH_GUESS=$(eve "lfd $MSH_GUESS_INDEX $(rnode \"$BUFFER\" \" \" 0)*")
-			else
-				MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
-			fi
+#	Match a history
+		else
+			MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
 		fi
-		BUFFER+="
+		MSH_HELP=$(mh $(echo $USR_INPUT | cut -f1))
+		if [[ $MSH_HELP == "" ]]; then
+			MSH_HELP=$(mhv $(echo $USR_INPUT | cut -f1))
+		fi
+	fi
+
+	BUFFER_CHAR=$(echo $BUFFER | wc -c)
+	BUFFER+="
  MSH: $MSH_GUESS ?"
-		region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
+	region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
+
+	BUFFER_CHAR=$(echo $BUFFER | wc -c)
+	BUFFER+="
+
+$MSH_HELP"
+	if [[ $MSH_HELP == *"not found"* ]]; then
+		region_highlight+=("$BUFFER_CHAR $#BUFFER fg=yellow");
+	else
+		region_highlight+=("$BUFFER_CHAR $#BUFFER fg=cyan,bold");
+	fi
 }
 
 msh-guess-first() {
@@ -1145,9 +1167,15 @@ mpp() {
 }
 
 # MSH : Help
-# mh gr : Show the documentation and code of command gr
+# mh gr : Show the documentation of command gr
 mh() {
   cat $MSH_CORE | gc "^$1\(" -B2 | head -2
+}
+
+# MSH : Help Verbose
+# mhv gr : Show the documentation and code of command gr
+mhv() {
+	mh $1
   w $1
 }
 
