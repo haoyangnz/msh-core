@@ -1614,7 +1614,7 @@ d() {
 	case $(vt) in
 		GIT) MSH_ASSIST="We're in a git repository.";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
-		N/A) MSH_ASSIST="We're not in a repository.";;
+		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
 }
 
