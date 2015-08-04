@@ -2448,12 +2448,6 @@ vu() {
 		SVN) svn up;;
 		N/A) e current directory not under version control;;
 	esac
-  if [[ -d .git ]]; then
-    git pull
-  fi
-  if [[ -d .svn ]]; then
-    svn up
-  fi
 }
 
 co() {
