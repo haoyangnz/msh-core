@@ -180,26 +180,39 @@ msh-guess() {
 		else
 			MSH_GUESS=$(chd "$BUFFER" $MSH_GUESS_INDEX)
 		fi
+
 		MSH_HELP=$(mh $(echo $USR_INPUT | cut -f1))
 		if [[ $MSH_HELP == "" ]]; then
 			MSH_HELP=$(mhv $(echo $USR_INPUT | cut -f1))
 		fi
+		MSH_HELP=$(e $MSH_HELP | sr "^" "      " | sr "# ")
+
 	fi
 
-	BUFFER_CHAR=$(echo $BUFFER | wc -c)
-	BUFFER+="
+	if [[ $MSH_GUESS != "" ]]; then
+		BUFFER_CHAR=$(echo $BUFFER | wc -c)
+		BUFFER+="
  MSH: $MSH_GUESS ?"
-	region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
-
-	BUFFER_CHAR=$(echo $BUFFER | wc -c)
-	BUFFER+="
-
-$MSH_HELP"
-	if [[ $MSH_HELP == *"not found"* ]]; then
-		region_highlight+=("$BUFFER_CHAR $#BUFFER fg=yellow");
-	else
-		region_highlight+=("$BUFFER_CHAR $#BUFFER fg=cyan,bold");
+		region_highlight=("$BUFFER_CHAR $#BUFFER fg=magenta");
 	fi
+
+	if [[ $MSH_HELP != "" ]]; then
+		BUFFER_CHAR=$(echo $BUFFER | wc -c)
+		BUFFER+="
+
+      By the way, here's some information about $(echo $USR_INPUT | cut -f1):"
+		region_highlight+=("$BUFFER_CHAR $#BUFFER fg=cyan,bold");
+
+		BUFFER_CHAR=$(echo $BUFFER | wc -c)
+		BUFFER+="
+$MSH_HELP"
+		if [[ $MSH_HELP == *"not found"* ]]; then
+			region_highlight+=("$BUFFER_CHAR $#BUFFER fg=yellow");
+		else
+			region_highlight+=("$BUFFER_CHAR $#BUFFER fg=green");
+		fi
+	fi
+
 }
 
 msh-guess-first() {
