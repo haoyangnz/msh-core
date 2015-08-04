@@ -1819,7 +1819,7 @@ tn() {
         clog) e o $n;;
         jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | s 's/remotes.origin.//g'); else e sw $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | s 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | s 's/\*//g');;
 								r) e vbd $(e $n | s 's/\*//g');;
 						esac;;
@@ -2101,18 +2101,6 @@ rv() {
   fi
 }
 
-# SVN Switch Utility
-# sw 7.72 : Switch the current working copy to branch 7.72
-sw() {
-  if [[ -d .git ]]; then
-		git checkout $1
-		vb
-	fi
-  if [[ -d .svn ]]; then
-		svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//')
-	fi
-}
-
 # SVN Rollback
 # rb 1000 1004 : Roll back changes from revision 1000 to 1004
 rb() {
@@ -2238,6 +2226,17 @@ vbn() {
 vbc() {
 	case $(vt) in
 		GIT) git checkout -b $1 origin/$1;;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
+}
+
+# Version Control : Branch Switch
+vbs() {
+	case $(vt) in
+		GIT) git checkout $1;;
+		SVN) svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//');;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
 	esac
@@ -2400,6 +2399,22 @@ vcap() {
 	esac
 }
 
+# Version Control : Update
+# vu : Update from remote
+vu() {
+	case $(vt) in
+		GIT) git pull;;
+		SVN) svn up;;
+		N/A) e current directory not under version control;;
+	esac
+  if [[ -d .git ]]; then
+    git pull
+  fi
+  if [[ -d .svn ]]; then
+    svn up
+  fi
+}
+
 co() {
   wtl "Check out"
   if [[ $1 == *git* ]]; then
@@ -2409,15 +2424,6 @@ co() {
     svn co $1
   fi
   wtu "Check out [DONE]"
-}
-
-up() {
-  if [[ -d .git ]]; then
-    git pull
-  fi
-  if [[ -d .svn ]]; then
-    svn up
-  fi
 }
 
 svnst() {
