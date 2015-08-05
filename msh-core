@@ -1762,12 +1762,6 @@ vw() {
   vi $(w $1)
 }
 
-# Vim: Vim Diff
-# vd a b : Vim-diff file a and file b
-vd() {
-  vimdiff $@
-}
-
 # }}}
 
 # Numbered Shortcut {{{
@@ -2353,14 +2347,14 @@ stm() {
   svn st | s ^M
 }
 
-# Version Control : Diff Simple
-# vds : Show simple repository diff
-vds() {
+# Version Control : Diff
+# vd : Show repository diff
+vd() {
 	case $(vt) in
 		GIT) git diff $@;;
 		SVN) svn diff $@;;
 		N/A) e current directory not under version control;;
-		*) e vds is not supported for your repository type;;
+		*) e vd is not supported for your repository type;;
 	esac
 }
 
