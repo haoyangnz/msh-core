@@ -1,4 +1,5 @@
 #### TODO {{{
+# Renaming of methods checks plugins
 # Fix mtp
 # Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp
 # Split file
@@ -18,7 +19,7 @@
 
 #### Keymap {{{
 # a : 
-# b : 
+# b :
 # c :
 # d : 
 # e : 
@@ -36,7 +37,7 @@
 # q :
 # r : Remove
 # s : Search
-# t :
+# t : Text
 # u :
 # v : Version Control
 # w :
@@ -185,7 +186,7 @@ msh-guess() {
 		if [[ $MSH_HELP == "" ]]; then
 			MSH_HELP=$(mhv $(echo $USR_INPUT | cut -f1))
 		fi
-		MSH_HELP=$(e $MSH_HELP | sr "^" "      " | sr "# ")
+		MSH_HELP=$(e $MSH_HELP | ts "^" "      " | ts "# ")
 
 	fi
 
@@ -536,12 +537,12 @@ lnode() {
 # Right Node
 # rnode a/b/c/d / 2 : Split a/b/c/d by delimiter / to [a,b,c,d] and obtain the second to last substring b (0 based)
 rnode() {
-  echo $1 | cut -d $2 -f $(echo "$(echo $1 | g -o $2 | wc -l) + 1 - $3" | bc)
+  echo $1 | cut -d $2 -f $(echo "$(echo $1 | s -o $2 | wc -l) + 1 - $3" | bc)
 }
 
 # Print previous command
 pc() {
-  fc -nl 1 | gv "^[ef]?[0-9]*$" | tail -1
+  fc -nl 1 | si "^[ef]?[0-9]*$" | tail -1
 }
 
 # Run previous command
@@ -555,35 +556,6 @@ menu() {
   eval $@ | nl
   read n
   menu=$(eval $@ | sed -n "$n"p | decolor)
-}
-
-# Text Manipulation: Keyword
-# kw one two three : Outputs "one.*two.*three"
-kw() {
-  echo $@ | s "s/ /.*/g"
-}
-
-# Text Manipulation: Full PascalCase Abbreviation
-# Form a regex for full PascalCase abbreviation
-ab() {
-  var=`echo $1 | sed 's/./&[abcdefghijklmnopqrstuvwxyz]*/g'`
-  echo "${var}\..*"
-}
-
-# Form a regex for partial abbreviation
-pab() {
-  var=`echo $1 | sed 's/./&.*/g'`
-  echo $var
-}
-
-# Escape for sed replacement
-esr() {
- sed -e 's/[\/&]/\\&/g'
-}
-
-# Escape for regex
-esk() {
-  sed -e 's/[]\/(){}$*.^|[]/\\&/g'
 }
 
 # Start second-level cron job
@@ -637,6 +609,48 @@ unl() {
 # timestamp : Show current time stamp in nano second
 timestamp() {
   date +%s%N
+}
+
+# }}}
+
+# Text {{{
+
+# Text : Keyword
+# kw one two three : Outputs "one.*two.*three"
+kw() {
+  echo $@ | sed "s/ /.*/g"
+}
+
+# Text : Full PascalCase Abbreviation
+# Form a regex for full PascalCase abbreviation
+ab() {
+  var=`echo $1 | sed 's/./&[abcdefghijklmnopqrstuvwxyz]*/g'`
+  echo "${var}\..*"
+}
+
+# Text : Partial Abbreviation
+# Form a regex for partial abbreviation
+pab() {
+  var=`echo $1 | sed 's/./&.*/g'`
+  echo $var
+}
+
+# Text : Escape Sed Replacement
+# Escape for sed replacement
+esr() {
+ sed -e 's/[\/&]/\\&/g'
+}
+
+# Text : Escape Regex
+# Escape for regex
+esk() {
+  sed -e 's/[]\/(){}$*.^|[]/\\&/g'
+}
+
+# Text : Substitute
+# ts apple pear : Substitute apple with pear
+ts() {
+	sed "s/$1/$2/g"
 }
 
 # }}}
@@ -917,14 +931,14 @@ l() {
 # List Utility: List All
 # la : List almost all files
 la() {
-  pn l "lscolor -ltuhA $@ | gv ^total"
+  pn l "lscolor -ltuhA $@ | si ^total"
 	wtt $(rnode $(pwd) "/" 0)
 }
 
 # List Utility: List Brief
 # lb : List files in brief
 lb() {
-  pn l "lscolor -ltuh $@ | gv ^total"
+  pn l "lscolor -ltuh $@ | si ^total"
   wtt $(rnode $(pwd) "/" 0)
 }
 
@@ -959,7 +973,7 @@ sc() {
 # m * "*.tar" : add .tar after all files
 m() {
 	if [[ $@[-1] == *"*"* ]]; then
-		mtp ${@:1:-1} "$(echo $@[-1] | sr \* \$f)"
+		mtp ${@:1:-1} "$(echo $@[-1] | ts \* \$f)"
 	else
 		mv ${@:1:-1} $@[-1]
 	fi
@@ -967,7 +981,7 @@ m() {
 }
 
 # Move : Move Text Process
-# mm *man* "$(echo \$f | sr man mapman)" : Replace *man* with *mapman*
+# mm *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
 mtp() {
 	for f in ${@:1:-1}; do
 		e "mv $f $@[-1]"
@@ -1084,7 +1098,7 @@ mr() {
 
 # MSH : Configure
 # mc : Configure MSH core
-# mc gr : Configure the command 'gr'
+# mc sl : Configure the command 'sl'
 mc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   echo "zR/^$1\(" > $MOS_TMP/rc1.vi
@@ -1158,7 +1172,7 @@ mpcd() {
 }
 
 # MSH : Publish
-# mp "New command gr" : Commit and push MSH library changes to upstream if build succeeds
+# mp "New command sl" : Commit and push MSH library changes to upstream if build succeeds
 mp() {
   if ! mb; then
     e Commit ommitted due to build failure.
@@ -1180,13 +1194,13 @@ mpp() {
 }
 
 # MSH : Help
-# mh gr : Show the documentation of command gr
+# mh sl : Show the documentation of command sl
 mh() {
-  cat $MSH_CORE | gc "^$1\(" -B2 | head -2
+  cat $MSH_CORE | sc "^$1\(" -B2 | head -2
 }
 
 # MSH : Help Verbose
-# mhv gr : Show the documentation and code of command gr
+# mhv sl : Show the documentation and code of command sl
 mhv() {
 	mh $1
   w $1
@@ -1196,7 +1210,7 @@ mhv() {
 # ml grep : List all command documentation with the keyword grep
 ml() {
   pattern="#.*$(kw $@)"
-  cat $MSH_CORE | gv "\(\)" | gv "^$" | gv "\{\{\{" | g -C1 "$pattern"
+  cat $MSH_CORE | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
 }
 
 # TODO seem to erase MAP_REV_SOURCE to MAP_REV
@@ -1308,7 +1322,7 @@ clog() {
     #pn "for file in $(find ~/.irclogs -type f); do ls -l $file; done | grep $(date +%F) | cut -d \" \" -f 8 | grep \"\/[^\/]*@\" | nl"
     pn clog "for file in $\(ls\); do echo $file; done"
   else
-    o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | g $(date +%F) | g $1 | cut -d " " -f 8 | g "\/[^\/]*@")
+    o $(for file in $(find ~/.irclogs -type f); do ls -l $file; done | s $(date +%F) | s $1 | cut -d " " -f 8 | s "\/[^\/]*@")
   fi
 }
 
@@ -1372,60 +1386,40 @@ pl() {
 
 # }}}
 
-# Sed {{{
+# Search {{{
 
-# Sed : Sed
-# s : Sed
+# Search
+# s apple shopping : Search for "apple" in file "shopping" with coloured highlights on if suitable
 s() {
-  sed $@
-}
-
-# Sed : Sed Replace
-# sr a b : Replace a with b
-sr() {
-	sed "s/$1/$2/g"
-}
-
-# Sed : Sed Inline
-# si : Sed inline
-si() {
-  sed -i $@
-}
-
-# }}}
-
-# Grep {{{
-
-g() {
   grep -Ei --line-buffered --color=auto $@
 }
 
-gc() {
+# Search : Colour
+# s apple shopping : Search for "apple" in file "shopping" with coloured highlights always on
+sc() {
   grep -Ei --line-buffered --color=always $@
 }
 
-# Grep Utility: Reverse grep
-# gv a : Reverse grep "a"
-gv() {
-  g -v $@
+# Search : Inverse
+# si apple shopping : Inversely search for "apple" (exclusing matches) in file "shopping"
+si() {
+  s -v $@
 }
 
-ge() {
-	gr exception
-}
-
-gr() {
+# Search : Local
+# sl apple : Search for "apple" locally in all files (recursive)
+sl() {
   if [[ $2 = "" ]]; then
     if $MSH_AUTO_EXCLUDE; then
-      pn g "grep --color=always -EirnI --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
+      pn s "grep --color=always -EirnI --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
     else
-      pn g "grep --color=always -EirnI \"$1\" ."
+      pn s "grep --color=always -EirnI \"$1\" ."
     fi
   else
     if $MSH_AUTO_EXCLUDE; then
-      pn g "grep --color=always -EirnI --include=\"$2\" --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
+      pn s "grep --color=always -EirnI --include=\"$2\" --exclude-dir={$MSH_AUTO_EXCLUDE_GLIST} \"$1\" ."
     else
-      pn g "grep --color=always -EirnI --include=\"$2\" \"$1\" ."
+      pn s "grep --color=always -EirnI --include=\"$2\" \"$1\" ."
     fi
   fi
 }
@@ -1451,7 +1445,7 @@ gsp() {
 }
 
 gf() {
-  pn g "grep \"^[^C].*($1)\" -rin . --include=\"*.f\" -B9999 | grep \"\s\sprogram\s|\s\sfunction\s|\s\ssubroutine\s|^[^C].*($1)\" -i | grep \"^[^C].*($1)\" -B1 -i | grep -v \"\-\-\""
+  pn s "grep \"^[^C].*($1)\" -rin . --include=\"*.f\" -B9999 | grep \"\s\sprogram\s|\s\sfunction\s|\s\ssubroutine\s|^[^C].*($1)\" -i | grep \"^[^C].*($1)\" -B1 -i | grep -v \"\-\-\""
 }
 
 gjf() {
@@ -1483,7 +1477,7 @@ whs() {
 # Find : Find Locate
 # fl intellij : Find the system file with the keyword "intellij" in its name
 fl() {
-  pn fl "locate -bi $1 | gv .Trash | gv .cache | g $1"
+  pn fl "locate -bi $1 | si .Trash | si .cache | s $1"
 }
 
 # Find by full file name
@@ -1522,7 +1516,7 @@ fpa() {
 # Process : Process Find
 # pf java tss : List all processes that includes "java" and "tss" in its details, order significant
 pf() {
-  ps -ef | gv grep | g $(kw $@)
+  ps -ef | si grep | s $(kw $@)
 }
 
 # Process : Process Kill
@@ -1709,14 +1703,14 @@ ofh() {
 # ch [xml] : Show command history [that involves xml]
 ch() {
   if [[ $1 == "" ]]; then
-    pn ch "cr $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | uniq -c"
+    pn ch "cr $MSH_HISTCMD | si \"^[^ ]*$\" | si \"^ch$\" | si \"^ch \" | uniq -c"
   else
-    pn ch "cr $MSH_HISTCMD | gv \"^[^ ]*$\" | gv \"^ch$\" | gv \"^ch \" | g "$(echo $1 | esk)" | uniq -c"
+    pn ch "cr $MSH_HISTCMD | si \"^[^ ]*$\" | si \"^ch$\" | si \"^ch \" | s "$(echo $1 | esk)" | uniq -c"
   fi
 }
 
 chd() {
-  cr $MSH_HISTCMD | gv "^[^ ]*$" | gv "^ch$" | gv "^ch " | gv "^chd" | g "$(echo $1 | esk)" | uniq | head -$2 | tail -1
+  cr $MSH_HISTCMD | si "^[^ ]*$" | si "^ch$" | si "^ch " | si "^chd" | s "$(echo $1 | esk)" | uniq | head -$2 | tail -1
 }
 
 # History : History Clear
@@ -1852,17 +1846,17 @@ tn() {
         tca) e vimdiff $n $PJ_ROOT/$MB/$n;;
         oh) e o $(rnode $n " " 0);;
         ch) e $(e $n | cut -c 9-);;
-        g) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
+        s) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
         vs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
-        jdb) e "si '/debugport/d' $n; si '/rmidport/a debugport=\"13066\"' $n";;
+        jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | s 's/remotes.origin.//g'); else e vbs $n; fi;;
-								d) e vbd $(e $n | s 's/\*//g');;
-								r) e vbd $(e $n | s 's/\*//g');;
+								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								d) e vbd $(e $n | sed 's/\*//g');;
+								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
         *) echo Done nothing.;;
     esac
@@ -1981,8 +1975,8 @@ sql() {
 
 # Find table in databases
 sqlf() {
-  for database in $(mysql -uroot -proot -e "show databases" | g $SQL_PREFIX); do
-    if table=$(mysql -uroot -proot $database -e "show tables" | g $(pab $1)); then
+  for database in $(mysql -uroot -proot -e "show databases" | s $SQL_PREFIX); do
+    if table=$(mysql -uroot -proot $database -e "show tables" | s $(pab $1)); then
       e $database
       e $table
       e
@@ -1993,7 +1987,7 @@ sqlf() {
 # SQL : SQL List Database
 # sqlld : List all databases under the SQL_PREFIX
 sqlld() {
-  mysql -uroot -proot -e "show databases" | g "^$SQL_PREFIX" | s "s/^$SQL_PREFIX//"
+  mysql -uroot -proot -e "show databases" | s "^$SQL_PREFIX" | sed "s/^$SQL_PREFIX//"
 }
 
 # Rename SQL database
@@ -2078,7 +2072,7 @@ sqlqe() {
   result=$(sqlf $1)
   database=$(e $result | pl 1 1)
   tables=$(e $result | pl 2)
-  if ! table=$(e $tables | g ^$1$); then
+  if ! table=$(e $tables | s ^$1$); then
     table=$(e $tables | pl 1 1) # Use the first match if no exact match
   fi
   count=$(sqle "select count(*) from $table" | head -3 | tail -1)
@@ -2137,7 +2131,7 @@ rv() {
   if [[ -d .svn ]]; then
     svn -R revert .
     svn st
-    svn st | g \? | awk '{print $2}' | xargs rm -rf
+    svn st | s \? | awk '{print $2}' | xargs rm -rf
     svn st
   fi
 }
@@ -2162,7 +2156,7 @@ mg() {
 		if [[ $2 == "" ]]; then
 			svn merge -c $1 .
 		else
-			svn merge -c $2 $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+			svn merge -c $2 $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
 		fi
 	fi
 }
@@ -2192,13 +2186,13 @@ rmi() {
 # SVN Tree Conflict: List Add Conflicts
 # tca : List tree conflicts for "local add, incoming add"
 tca() {
-  svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9- | nl
+  svn st | s ">   local add, incoming add upon merge" -B1 | si ">" | si "\-\-" | cut -c9- | nl
 }
 
 # SVN Tree Conflict: Resolve Identical Add Conflicts
 # tcar : Resolve tree conflicts for "local add, incoming add" by accepting local, where the files are identical
 tcar() {
-  for tc in $(svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9-); do
+  for tc in $(svn st | s ">   local add, incoming add upon merge" -B1 | si ">" | si "\-\-" | cut -c9-); do
     if [[ "$(diff $tc $PJ_ROOT/$MB/$tc)" = "" ]]; then
       svn resolve --accept working $tc
     fi
@@ -2208,7 +2202,7 @@ tcar() {
 # SVN Tree Conflict: Accept Incoming
 # tcaa : Accept incoming files for tree conflicts for "local add, incoming add"
 tcaa() {
-  for tc in $(svn st | g ">   local add, incoming add upon merge" -B1 | gv ">" | gv "\-\-" | cut -c9-); do
+  for tc in $(svn st | s ">   local add, incoming add upon merge" -B1 | si ">" | si "\-\-" | cut -c9-); do
     cp $PJ_ROOT/$MB/$tc $tc
   done
 }
@@ -2216,7 +2210,7 @@ tcaa() {
 # SVN Tree Conflict: List Other Conflicts (Non-add)
 # tco : List Tree conflicts other than "local add, incoming add"
 tco() {
-  svn st | gv ">   local add, incoming add upon merge" | g ">()" -B1 | gv ">" | gv "\-\-" | cut -c9-
+  svn st | si ">   local add, incoming add upon merge" | s ">()" -B1 | si ">" | si "\-\-" | cut -c9-
 }
 
 svncomment() {
@@ -2227,7 +2221,7 @@ svnlog() {
   if [[ $1 = "" ]]; then
     svn log | head -5000 | head -30
   else
-    svn log | head -5000 | g -C2 $1 | head -30
+    svn log | head -5000 | s -C2 $1 | head -30
   fi
 }
 
@@ -2277,7 +2271,7 @@ vbc() {
 vbs() {
 	case $(vt) in
 		GIT) git checkout $1;;
-		SVN) svn sw $(svn info | g URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//');;
+		SVN) svn sw $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//');;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
 	esac
@@ -2356,7 +2350,7 @@ vs() {
 }
 
 stm() {
-  svn st | g ^M
+  svn st | s ^M
 }
 
 # Version Control : Diff Simple
@@ -2383,7 +2377,7 @@ cia() {
 }
 
 todo() {
-	gr "TODO "
+	sl "TODO "
 }
 
 # repository : Commit
@@ -2392,11 +2386,11 @@ rc() {
 	case $(vt) in
 		GIT) git commit -m $1;;
 		SVN)
-			if [[ $(svn st | g "^C") = "" ]]; then
+			if [[ $(svn st | s "^C") = "" ]]; then
 				svn ci ${@:2} -m $1
 			else
 				echo ci: Couldn\'t commit due to following conflicts
-				svn st | g "^C"
+				svn st | s "^C"
 				return 1
 			fi
 			;;
@@ -2466,7 +2460,7 @@ co() {
 }
 
 svnst() {
-  svn di -r 31094:31095 $SVN/trunk/$1 | g Index | cut -d " " -f2
+  svn di -r 31094:31095 $SVN/trunk/$1 | s Index | cut -d " " -f2
 }
 
 svndil() {
@@ -2587,7 +2581,7 @@ tdf() {
 # tduf : Undo finish of previous task
 tduf() {
   ins $TD_TODO "$(catl $TD_DONE 1)"
-  si 1d $TD_DONE
+  sed -i 1d $TD_DONE
 }
 
 # Todo Utility: List tasks on the DONE list
