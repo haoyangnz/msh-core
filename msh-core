@@ -1817,6 +1817,8 @@ fn() {
 }
 
 # Translate Numbered Shortcut
+# TODO each case could be a new function that's evaluated here, e.g. tn_vh instead of vh in case
+# MAYBE end of action reprint should be done as part of tn (vb, vbd, going back to vb should be done as part of tn not vbd)
 tn() {
     n=$(catlbnc $1)
     case $(pnc) in
@@ -1851,6 +1853,9 @@ tn() {
 								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
+						esac;;
+				vh) case $2 in
+								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | cut -d " " -f2); fi;;
 						esac;;
         *) echo Done nothing.;;
     esac
@@ -2312,10 +2317,21 @@ vhs() {
 # Version Control : History
 vh() {
 	case $(vt) in
-		GIT) git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@;;
+		GIT) pn vh "git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@";;
 		N/A) e current directory not under version control;;
 		*) e vh is not supported for your repository type;;
 	esac
+}
+
+# Version Control : History Diff
+# vhd 5350c00 : See diff for commit 5350c00
+vhd() {
+	case $(vt) in
+		GIT) vd $1^!;;
+		N/A) e current directory not under version control;;
+		*) e vhd is not supported for your repository type;;
+	esac
+	vh
 }
 
 # Version Control : Type
