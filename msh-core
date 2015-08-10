@@ -1197,7 +1197,7 @@ mpp() {
 mp() {
 	mcp $1
 	for plugin in $(ls $MSH_PLUGIN); do
-		echo mp $plugin
+		mpp $(echo $plugin | cut -c4-) $1
 	done
 }
 
