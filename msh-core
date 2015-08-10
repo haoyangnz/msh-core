@@ -1614,7 +1614,7 @@ d() {
   builtin cd $1
   l
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.";;
+		GIT) MSH_ASSIST="We're in a git repository. Branch: $(vbc)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
