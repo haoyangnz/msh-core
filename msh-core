@@ -1171,9 +1171,9 @@ mpcd() {
   popd
 }
 
-# MSH : Publish
-# mp "New command sl" : Commit and push MSH library changes to upstream if build succeeds
-mp() {
+# MSH : Core Publish
+# mp "New command sl" : Commit and push MSH core changes to upstream if build succeeds
+mcp() {
   if ! mb; then
     e Commit ommitted due to build failure.
     return
@@ -1191,6 +1191,14 @@ mpp() {
   cd $MSH_PLUGIN/msh-$1
   vcap $2
   popd
+}
+
+# MSH : Publish
+mp() {
+	mcp $1
+	for plugin in $(ls $MSH_PLUGIN); do
+		echo mp $plugin
+	done
 }
 
 # MSH : Help
@@ -2359,11 +2367,19 @@ vs() {
 		GIT) git status;;
 		SVN) pn st "svn status";;
 		N/A) e current directory not under version control;;
+		*) e vs is not supported for your repository type;;
 	esac
 }
 
-stm() {
-  svn st | s ^M
+# Version Control : Status Modified
+# vsm : Show modified files in repository
+vsm() {
+	case $(vt) in
+		GIT) git status;;
+		SVN) svn st | s ^M;;
+		N/A) e current directory not under version control;;
+		*) e vsm is not supported for your repository type;;
+	esac
 }
 
 # Version Control : Diff
