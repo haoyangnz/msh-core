@@ -2393,9 +2393,9 @@ todo() {
 	sl "TODO "
 }
 
-# repository : Commit
+# Version Control : Commit
 # rc "Minor change" : Commit changes with comment "Minor change"
-rc() {
+vc() {
 	case $(vt) in
 		GIT) git commit -m $1;;
 		SVN)
