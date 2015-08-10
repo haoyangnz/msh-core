@@ -2116,7 +2116,7 @@ revert() {
   dir=$(pwd)
   cd ..
   mv $dir $dir.bak
-  svn up
+	vu
   cd $dir
   dp
 }
@@ -2143,21 +2143,6 @@ rb() {
   else
     svn merge -r $2:$1 .
   fi
-}
-
-# SVN Merge Utility
-# mg 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
-mg() {
-  if [[ -d .git ]]; then
-		git merge $1
-	fi
-  if [[ -d .svn ]]; then
-		if [[ $2 == "" ]]; then
-			svn merge -c $1 .
-		else
-			svn merge -c $2 $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
-		fi
-	fi
 }
 
 # SVN Merge Out Utility
@@ -2271,6 +2256,24 @@ vbs() {
 	case $(vt) in
 		GIT) git checkout $1;;
 		SVN) svn sw $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*\//branches\/'$1'\//');;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
+}
+
+# Version Control : Branch Merge
+# vbm 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
+vbm() {
+	case $(vt) in
+		GIT) git merge $1;;
+		SVN) 
+				if [[ $2 == "" ]]; then
+					svn merge -c $1 .
+				else
+					svn merge -c $2 $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
+				fi
+				;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
 	esac
