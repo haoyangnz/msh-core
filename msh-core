@@ -1,21 +1,4 @@
-#### TODO {{{
-# Renaming of methods checks plugins
-# Fix mtp
-# Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp
-# Split file
-# General de-numbering
-# Globally fix pglc
-# Block stdout for mr
-# Implement directory stack
-# Make menu pager friendly - enhance cds to use menu - ds to go to moded ds
-# Sensible command names
-# Usage statistics and automatic enhancement recommendation based on usage
-# Archiving system
-# Advanced post-command support
-# Completing running task beeps terminal
-# Command takes precedence over file open
-# Auto clean of STDBUF
-# }}}
+
 
 #### Keymap {{{
 # a : 
@@ -158,7 +141,7 @@ wtt() {
 # (Internal) MSH : Assist
 msh-assist() {
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch: $YELLOW$(vbc)$FINISH Status: $(if vs | s clean &> /dev/null; then e ${GREEN}clean${FINISH}; else e ${RED}dirty${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vs | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; else e ${RED}$(vbc)(dirty) ${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
@@ -2317,6 +2300,18 @@ vbm() {
 		*) e vb is not supported for your repository type;;
 	esac
 	vb
+}
+
+# Version Control : Branch Merge Diff Incoming Count
+# vbmdic : Show how many commits coming in when merging from master (behind master)
+vbmdic() {
+	git rev-list --left-right --count master... | cut -f1
+}
+
+# Version Control : Branch Merge Diff Outgoing Count
+# vbmdoc : Show how many commits going out when merging to master (ahead of master)
+vbmdoc() {
+	git rev-list --left-right --count master... | cut -f2
 }
 
 # Version Control : Branch Delete
