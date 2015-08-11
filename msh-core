@@ -2285,10 +2285,11 @@ vbs() {
 }
 
 # Version Control : Branch Merge
+# vbm : Merge from master
 # vbm 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
 vbm() {
 	case $(vt) in
-		GIT) git merge $1;;
+		GIT) if [[ $1 == "" ]]; then git merge master; else git merge $1; fi;;
 		SVN) 
 				if [[ $2 == "" ]]; then
 					svn merge -c $1 .
