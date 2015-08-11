@@ -505,13 +505,7 @@ export MSH_HISTOPENFILE=$MOS_TMP/HISTOPENFILE
 
 # Core Aliases {{{
 
-alias ja='mvn clean install'
-alias jats='mvn clean install -Dmaven.test.skip'
-alias pe='mvn eclipse:eclipse'
-alias dp='deploy'
-alias jr='jrebel'
 alias pls='sudo $(!!)'
-alias dp='deploy'
 
 alias beep='paplay $BEEP'
 
