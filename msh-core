@@ -708,14 +708,14 @@ pg() {
 # Pager : Right
 # pgr : Scroll the pager to the right
 pgr() {
-  (( PAGER_LEFT += $PAGER_WIDTH ))
+  (( PAGER_LEFT += $PAGER_WIDTH/2 ))
   pgp
 }
 
 # Pager : Left
 # pgl : Scroll the pager to the left
 pgl() {
-  (( PAGER_LEFT -= $PAGER_WIDTH ))
+  (( PAGER_LEFT -= $PAGER_WIDTH/2 ))
   pgp
 }
 
