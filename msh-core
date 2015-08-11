@@ -141,7 +141,7 @@ wtt() {
 # (Internal) MSH : Assist
 msh-assist() {
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vs | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; else e ${RED}$(vbc)(dirty) ${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vs | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
