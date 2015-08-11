@@ -157,6 +157,11 @@ wtt() {
 
 # (Internal) MSH : Assist
 msh-assist() {
+	case $(vt) in
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch: $YELLOW$(vbc)$FINISH Status: $(if vs | s clean &> /dev/null; then e ${GREEN}clean${FINISH}; else e ${RED}dirty${FINISH}; fi)";;
+		SVN) MSH_ASSIST="We're in a svn repository.";;
+		N/A) MSH_ASSIST="We're not under version control.";;
+	esac
 	e
 	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
 	e $MAGENTA MSH: $MSH_ASSIST $FINISH
@@ -1613,11 +1618,6 @@ d() {
   touch -a $1
   builtin cd $1
   l
-	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository. Branch: $(vbc) Status: $(if vs | s clean; then e clean; else e dirty; fi)";;
-		SVN) MSH_ASSIST="We're in a svn repository.";;
-		N/A) MSH_ASSIST="We're not under version control.";;
-	esac
 }
 
 # Disk : Usage
