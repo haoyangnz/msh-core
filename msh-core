@@ -960,10 +960,10 @@ lfd() {
   lsnocolor -tuhd ${@:2} | head -$1 | tail -1
 }
 
-# Shortcut : Shortcut
-# sc a/b : Create shortcut b pointing to a/b (shortcut name is taken from leaf of destination)
-# sc a/b c : Create shortcut c pointing to a/b
-sc() {
+# Disk : Link
+# dl a/b : Create shortcut b pointing to a/b (shortcut name is taken from leaf of destination)
+# dl a/b c : Create shortcut c pointing to a/b
+dl() {
   ln -fs $@
 }
 
@@ -1001,7 +1001,7 @@ mmd() {
 ms() {
   m $@
   for file in ${@:1:-1}; do
-    sc $@[-1]/$file
+    dl $@[-1]/$file
   done
   l
 }
@@ -1084,11 +1084,11 @@ export MUTTRC=$RC/.muttrc
 export XMODMAP=$RC/.Xmodmap
 export DIRCOLORSRC=$RC/.dir_colors
 
-sc $ZSHRC ~
-sc $VIMRC ~
-sc $TMUXRC ~
-sc $MUTTRC ~
-sc $DIRCOLORSRC ~
+dl $ZSHRC ~
+dl $VIMRC ~
+dl $TMUXRC ~
+dl $MUTTRC ~
+dl $DIRCOLORSRC ~
 
 # MSH : Reload
 # mr : Reload MSH
@@ -1614,7 +1614,7 @@ d() {
   builtin cd $1
   l
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository. Branch: $(vbc)";;
+		GIT) MSH_ASSIST="We're in a git repository. Branch: $(vbc) Status: $(if vs | s clean; then e clean; else e dirty; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
