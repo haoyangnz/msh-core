@@ -2286,17 +2286,10 @@ vbs() {
 
 # Version Control : Branch Merge
 # vbm : Merge from master
-# vbm 7.72 8399 : Merge r8399 from branch 7.72 to the working copy
 vbm() {
 	case $(vt) in
 		GIT) if [[ $1 == "" ]]; then git merge master; else git merge $1; fi;;
-		SVN) 
-				if [[ $2 == "" ]]; then
-					svn merge -c $1 .
-				else
-					svn merge -c $2 $(svn info | s URL | cut -d " " -f 2 | sed -r 's/branches\/[^\/]*/branches\/'$1'/')
-				fi
-				;;
+		SVN) svn merge -c $1 .;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
 	esac
