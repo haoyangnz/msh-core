@@ -277,7 +277,7 @@ msh-personality() {
     MSH_REPLY="You're nagging again.."
   elif [[ $BUFFER == "Hello" ]]; then
     MSH_REPLY="Hey. By the way - you're hardly this polite. Is everything OK?"
-  elif [[ $LAST_BUFFER == "Hello" && $BUFFER == "No" || $BUFFER == "No" ]]; then
+  elif [[ $LAST_BUFFER == "Hello" && $BUFFER == "No" ]]; then
     MSH_REPLY="Oh.. What's wrong?"
   elif [[ $LAST_BUFFER == "No" ]]; then
     MSH_REPLY="OK. Good luck."
@@ -371,6 +371,20 @@ msh-backward() {
 }
 zle -N msh-backward
 bindkey "^B" msh-backward
+
+msh-right() {
+  BUFFER=pgr
+  msh-enter
+}
+zle -N msh-right
+bindkey "^G" msh-right
+
+msh-left() {
+  BUFFER=pgl
+  msh-enter
+}
+zle -N msh-left
+bindkey "^V" msh-left
 
 PROMPT="${PBLUE} USR: ${PFINISH}"
 RPROMPT="${PBRCYAN}%/${PFINISH}"
@@ -665,13 +679,15 @@ ts() {
 # Pager : Pager Size
 # PAGER_SIZE=30 : Set the pager size to 30
 PAGER_SIZE=15
+PAGER_WIDTH=100
 
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
   cs && echo
-  e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) $FINISH${BRRED}Selected:$SI$FINISH
-  catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
+  e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) (+$PAGER_LEFT) $FINISH${BRRED}Selected:$SI$FINISH
+  #catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
+  catb | perl -pe 's/^((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_LEFT'})((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_WIDTH'}).*/$3\e[m/' | nl | al $PAGER_TOP $PAGER_BOTTOM
 }
 
 # Pager : Pager Line Count
@@ -685,6 +701,21 @@ pglc() {
 pg() {
   PAGER_TOP=1
   PAGER_BOTTOM=$PAGER_SIZE
+	PAGER_LEFT=0
+  pgp
+}
+
+# Pager : Right
+# pgr : Scroll the pager to the right
+pgr() {
+  (( PAGER_LEFT += $PAGER_WIDTH ))
+  pgp
+}
+
+# Pager : Left
+# pgl : Scroll the pager to the left
+pgl() {
+  (( PAGER_LEFT -= $PAGER_WIDTH ))
   pgp
 }
 
