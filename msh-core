@@ -360,14 +360,14 @@ msh-right() {
   msh-enter
 }
 zle -N msh-right
-bindkey "^G" msh-right
+bindkey "^J" msh-right
 
 msh-left() {
   BUFFER=pgl
   msh-enter
 }
 zle -N msh-left
-bindkey "^V" msh-left
+bindkey "^K" msh-left
 
 PROMPT="${PBLUE} USR: ${PFINISH}"
 RPROMPT="${PBRCYAN}%/${PFINISH}"
@@ -1877,7 +1877,7 @@ tn() {
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
 				vh) case $2 in
-								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | cut -d " " -f2); fi;;
+								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
         *) echo Done nothing.;;
     esac
