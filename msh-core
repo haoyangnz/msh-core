@@ -2423,7 +2423,7 @@ cia() {
 }
 
 todo() {
-	sl "TODO "
+	svn diff | s todo | ts "^.*TODO "
 }
 
 # Version Control : Commit
