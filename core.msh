@@ -1148,9 +1148,9 @@ mc() {
 }
 
 # MSH : Install
-# mi HaoyangFeng msh-node : Install MSH plugin from HaoyangFeng's github repository msh-node
+# mi haoyangnz node : Install MSH plugin from haoyangnz's github repository msh-node
 mi() {
-	git clone https://github.com/$1/$2 $MSH/$2
+	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
 	mr
 }
 
@@ -2182,7 +2182,7 @@ rmo() {
 }
 
 # SVN Merge In Utility
-# mi : Merge in the changes from base to head branch
+# rmi : Merge in the changes from base to head branch
 rmi() {
   crc MMB $MPJ
   crc JMB $JPJ
