@@ -474,6 +474,153 @@ MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/tests
 MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
 MSH_PREFERRED_REPOSITORY_TYPE=GIT
 
+export MSH=~/msh
+export MSH_CORE=$MSH/msh-core/core.msh
+export MSHRC=~/.mshrc
+
+# MSH : Reload
+# mr : Reload MSH
+mr() {
+  source $MSH_CORE
+}
+
+# MSH : Configure
+# mc : Configure MSH core
+# mc java : Configure msh-java module
+# mc sl : Configure the command 'sl'
+mc() {
+  echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
+  if [[ $1 == "" ]]; then
+		module=core
+  elif [[ -d $MSH/msh-$1 ]]; then
+		module=$1
+	else
+		command=$1
+		echo "zR/^$1\(" > $MOS_TMP/rc.vi
+		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
+		if [[ $(echo $module | wc -l) > 1 ]]; then
+			pn mc "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
+			return
+		fi
+  fi
+	vi $MSH/msh-$module/$module.msh -s "$MOS_TMP/rc.vi"
+	mr
+}
+
+# MSH : Install
+# mi haoyangnz node : Install MSH plugin from haoyangnz's github repository msh-node
+mi() {
+	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
+	mr
+}
+
+# MSH : Build
+# mb : Run tests on the current MSH library
+mb() {
+	# Prepare work directory
+  pwd=$(pwd)
+  sb
+  d rt
+  cs
+
+	# Perform regression test
+  result=PASSED
+  e --- Starting RT
+
+	# Remove work directory
+  cd $pwd
+  if [[ $result == "FAILED" ]]; then
+    e --- RT FAILED
+    return 1
+  fi
+  e --- RT PASSED
+}
+
+# MSH : Configuration Diff
+# mcd : Show diff for MSH library changes
+mcd() {
+  pushd .
+  cd $MSH
+	for plugin in $(ls); do
+		cd $plugin
+		dt
+		cd ..
+	done
+  popd
+}
+
+# MSH : Plugin Configuration Diff
+# mpcd java : Show diff for msh-java plugin changes
+mpcd() {
+  pushd .
+  cd $MSH/msh-$1
+	dt
+  popd
+}
+
+# MSH : Core Publish
+# mp "New command sl" : Commit and push MSH core changes to upstream if build succeeds
+mcp() {
+  if ! mb; then
+    e Commit ommitted due to build failure.
+    return
+  fi
+  pushd .
+  cd $MSH
+  vcap $1
+  popd
+}
+
+# MSH : Plugin Publish
+# mpp java "New command b" : Commit and push MSH plugin changes to upstream if build succeeds
+mpp() {
+  pushd .
+  cd $MSH/msh-$1
+  vcap $2
+  popd
+}
+
+# MSH : Publish
+mp() {
+	mcp $1
+	for plugin in $(ls $MSH); do
+		mpp $(echo $plugin | cut -c5-) $1
+	done
+}
+
+# MSH : Help
+# mh sl : Show the documentation of command sl
+mh() {
+  cat $MSH_CORE | sc "^$1\(" -B2 | head -2
+}
+
+# MSH : Help Verbose
+# mhv sl : Show the documentation and code of command sl
+mhv() {
+	mh $1
+  w $1
+}
+
+# # MSH : List
+# ml grep : List all command documentation with the keyword grep
+ml() {
+  pattern="#.*$(kw $@)"
+  cat $MSH_CORE | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
+}
+
+# TODO seem to erase MAP_REV_SOURCE to MAP_REV
+# Change variable in Zsh source
+crc() {
+	if [[ $3 == "" ]]; then
+		rc_file=$ZSHRC
+	else
+		rc_file=$MSH/msh-$3/$3.msh
+	fi
+	rep=$(echo $2 | esr)
+	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
+	mr
+}
+
 # }}}
 
 #### General OS {{{
@@ -1100,10 +1247,6 @@ ins() {
 
 # Configuration Files {{{
 
-export MSH=~/msh
-export MSH_CORE=$MSH/msh-core/core.msh
-export MSHRC=~/.mshrc
-
 export RC=$MOS_ROOT/.rc
 export ZSHRC=$RC/.zshrc
 export VIMRC=$RC/.vimrc
@@ -1117,145 +1260,6 @@ dl $VIMRC ~
 dl $TMUXRC ~
 dl $MUTTRC ~
 dl $DIRCOLORSRC ~
-
-# MSH : Reload
-# mr : Reload MSH
-mr() {
-  source $MSH_CORE
-}
-
-# MSH : Configure
-# mc : Configure MSH core
-# mc java : Configure msh-java module
-# mc sl : Configure the command 'sl'
-mc() {
-  echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
-  if [[ $1 == "" ]]; then
-		module=core
-  elif [[ -d $MSH/msh-$1 ]]; then
-		module=$1
-	else
-		command=$1
-		echo "zR/^$1\(" > $MOS_TMP/rc.vi
-		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
-		if [[ $(echo $module | wc -l) > 1 ]]; then
-			pn mc "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
-			return
-		fi
-  fi
-	vi $MSH/msh-$module/$module.msh -s "$MOS_TMP/rc.vi"
-	mr
-}
-
-# MSH : Install
-# mi haoyangnz node : Install MSH plugin from haoyangnz's github repository msh-node
-mi() {
-	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
-	mr
-}
-
-# MSH : Build
-# mb : Run tests on the current MSH library
-mb() {
-	# Prepare work directory
-  pwd=$(pwd)
-  sb
-  d rt
-  cs
-
-	# Perform regression test
-  result=PASSED
-  e --- Starting RT
-
-	# Remove work directory
-  cd $pwd
-  if [[ $result == "FAILED" ]]; then
-    e --- RT FAILED
-    return 1
-  fi
-  e --- RT PASSED
-}
-
-# MSH : Configuration Diff
-# mcd : Show diff for MSH library changes
-mcd() {
-  pushd .
-  cd $MSH
-	dt
-  popd
-}
-
-# MSH : Plugin Configuration Diff
-# mpcd java : Show diff for msh-java plugin changes
-mpcd() {
-  pushd .
-  cd $MSH/msh-$1
-	dt
-  popd
-}
-
-# MSH : Core Publish
-# mp "New command sl" : Commit and push MSH core changes to upstream if build succeeds
-mcp() {
-  if ! mb; then
-    e Commit ommitted due to build failure.
-    return
-  fi
-  pushd .
-  cd $MSH
-  vcap $1
-  popd
-}
-
-# MSH : Plugin Publish
-# mpp java "New command b" : Commit and push MSH plugin changes to upstream if build succeeds
-mpp() {
-  pushd .
-  cd $MSH/msh-$1
-  vcap $2
-  popd
-}
-
-# MSH : Publish
-mp() {
-	mcp $1
-	for plugin in $(ls $MSH); do
-		mpp $(echo $plugin | cut -c5-) $1
-	done
-}
-
-# MSH : Help
-# mh sl : Show the documentation of command sl
-mh() {
-  cat $MSH_CORE | sc "^$1\(" -B2 | head -2
-}
-
-# MSH : Help Verbose
-# mhv sl : Show the documentation and code of command sl
-mhv() {
-	mh $1
-  w $1
-}
-
-# # MSH : List
-# ml grep : List all command documentation with the keyword grep
-ml() {
-  pattern="#.*$(kw $@)"
-  cat $MSH_CORE | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
-}
-
-# TODO seem to erase MAP_REV_SOURCE to MAP_REV
-# Change variable in Zsh source
-crc() {
-	if [[ $3 == "" ]]; then
-		rc_file=$ZSHRC
-	else
-		rc_file=$MSH/msh-$3/$3.msh
-	fi
-	rep=$(echo $2 | esr)
-	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
-	mr
-}
 
 # Configure Vi
 vrc() {
