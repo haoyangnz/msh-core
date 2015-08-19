@@ -1101,7 +1101,7 @@ ins() {
 # Configuration Files {{{
 
 export MSH=~/msh
-export MSH_CORE=$MSH/msh-core/msh-core
+export MSH_CORE=$MSH/msh-core/core.msh
 export MSHRC=~/.mshrc
 
 export RC=$MOS_ROOT/.rc
