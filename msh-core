@@ -1101,9 +1101,7 @@ ins() {
 # Configuration Files {{{
 
 export MSH=~/msh
-export MSH_CORE=$MSH/msh-core
-export DOTMSH=~/.msh
-export MSH_PLUGIN=$DOTMSH/plugin
+export MSH_CORE=$MSH/msh-core/msh-core
 export MSHRC=~/.mshrc
 
 export RC=$MOS_ROOT/.rc
@@ -1147,9 +1145,9 @@ mpc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   echo "zR/^$2\(" > $MOS_TMP/rc1.vi
   if [[ $2 = "" ]]; then
-    vi $MSH_PLUGIN/msh-$1/$1.msh -s "$MOS_TMP/rc.vi"
+    vi $MSH/msh-$1/$1.msh -s "$MOS_TMP/rc.vi"
   else
-    vi $MSH_PLUGIN/msh-$1/$1.msh -s "$MOS_TMP/rc1.vi"
+    vi $MSH/msh-$1/$1.msh -s "$MOS_TMP/rc1.vi"
   fi
 	mr
 }
@@ -1157,7 +1155,7 @@ mpc() {
 # MSH : Install
 # mi HaoyangFeng msh-node : Install MSH plugin from HaoyangFeng's github repository msh-node
 mi() {
-	git clone https://github.com/$1/$2 $MSH_PLUGIN/$2
+	git clone https://github.com/$1/$2 $MSH/$2
 	mr
 }
 
@@ -1196,7 +1194,7 @@ mcd() {
 # mpcd java : Show diff for msh-java plugin changes
 mpcd() {
   pushd .
-  cd $MSH_PLUGIN/msh-$1
+  cd $MSH/msh-$1
 	dt
   popd
 }
@@ -1218,7 +1216,7 @@ mcp() {
 # mpp java "New command b" : Commit and push MSH plugin changes to upstream if build succeeds
 mpp() {
   pushd .
-  cd $MSH_PLUGIN/msh-$1
+  cd $MSH/msh-$1
   vcap $2
   popd
 }
@@ -1226,7 +1224,7 @@ mpp() {
 # MSH : Publish
 mp() {
 	mcp $1
-	for plugin in $(ls $MSH_PLUGIN); do
+	for plugin in $(ls $MSH); do
 		mpp $(echo $plugin | cut -c5-) $1
 	done
 }
@@ -1257,7 +1255,7 @@ crc() {
 	if [[ $3 == "" ]]; then
 		rc_file=$ZSHRC
 	else
-		rc_file=$MSH_PLUGIN/msh-$3/$3.msh
+		rc_file=$MSH/msh-$3/$3.msh
 	fi
 	rep=$(echo $2 | esr)
 	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
@@ -2747,7 +2745,7 @@ esac
 
 # Load Plugins {{{
 
-d $MSH_PLUGIN
+d $MSH
 for plugin in $(ls); do
 	. $plugin/*.msh
 done
