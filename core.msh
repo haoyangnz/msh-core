@@ -1883,7 +1883,7 @@ tn() {
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
-				mc) e vi $MSH/msh-$n/$n.msh -s "$MOS_TMP/rc.vi"; mr;;
+				mc) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
     esac
 }
