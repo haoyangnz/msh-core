@@ -467,21 +467,22 @@ bindkey -M vicmd '?' history-incremental-search-backward
 
 #### MSH {{{
 
-MSH_LS_AUTO_MODE=false
-MSH_AUTO_EXCLUDE=true
-MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
-MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
-MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
-MSH_PREFERRED_REPOSITORY_TYPE=GIT
+export MSH_LS_AUTO_MODE=false
+export MSH_AUTO_EXCLUDE=true
+export MSH_AUTO_EXCLUDE_GLIST=".svn,.git,testsrc,target,.classpath,node_modules,bower_components,lib"
+export MSH_AUTO_EXCLUDE_FLIST="! -path '*/.svn/*' ! -path '*/target/*' ! -path '*/testsrc/*' ! -path '*/classes/*'"
+export MSH_AUTO_EXCLUDE_TLIST=".svn|testsrc|target|.classpath|node_modules|.git|lib|bower_components"
+export MSH_PREFERRED_REPOSITORY_TYPE=GIT
 
 export MSH=~/msh
 export MSH_CORE=$MSH/msh-core/core.msh
 export MSHRC=~/.mshrc
 
+# TODO Could be started by loading a bootstrapping msh which also indexes available msh modules
 # MSH : Reload
 # mr : Reload MSH
 mr() {
-  source $MSH_CORE
+  ~ $MSH_CORE
 }
 
 # MSH : Configure
@@ -508,7 +509,7 @@ mc() {
 }
 
 # MSH : Install
-# mi haoyangnz node : Install MSH plugin from haoyangnz's github repository msh-node
+# mi haoyangnz node : Install MSH module "msh-node" from haoyangnz's github repository msh-node
 mi() {
 	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
 	mr
