@@ -1,4 +1,21 @@
-
+#### TODO {{{
+# Renaming of methods checks plugins		
+# Fix mtp		
+# Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp		
+# Split file		
+# General de-numbering		
+# Globally fix pglc		
+# Block stdout for mr		
+# Implement directory stack		
+# Make menu pager friendly - enhance cds to use menu - ds to go to moded ds		
+# Sensible command names		
+# Usage statistics and automatic enhancement recommendation based on usage		
+# Archiving system		
+# Advanced post-command support		
+# Completing running task beeps terminal		
+# Command takes precedence over file open		
+# Auto clean of STDBUF		
+# }}}
 
 #### Keymap {{{
 # a : 
