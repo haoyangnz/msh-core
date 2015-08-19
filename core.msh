@@ -2747,7 +2747,9 @@ esac
 
 d $MSH
 for plugin in $(ls); do
-	. $plugin/*.msh
+	if [[ $plugin != msh-core ]]; then
+		. $plugin/*.msh
+	fi
 done
 
 # }}}
