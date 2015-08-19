@@ -1126,29 +1126,24 @@ mr() {
 
 # MSH : Configure
 # mc : Configure MSH core
+# mc java : Configure msh-java module
 # mc sl : Configure the command 'sl'
 mc() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
-  echo "zR/^$1\(" > $MOS_TMP/rc1.vi
-  if [[ $1 = "" ]]; then
-    vi $MSH_CORE -s "$MOS_TMP/rc.vi"
-  else
-    vi $MSH_CORE -s "$MOS_TMP/rc1.vi"
+  if [[ $1 == "" ]]; then
+		module=core
+  elif [[ -d $MSH/msh-$1 ]]; then
+		module=$1
+	else
+		command=$1
+		echo "zR/^$1\(" > $MOS_TMP/rc.vi
+		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
+		if [[ $(echo $module | wc -l) > 1 ]]; then
+			pn mc "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
+			return
+		fi
   fi
-	mr
-}
-
-# MSH : Plugin Configure
-# mpc java : Configure msh-java plugin
-# mpc java b : Configure command 'b'
-mpc() {
-  echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
-  echo "zR/^$2\(" > $MOS_TMP/rc1.vi
-  if [[ $2 = "" ]]; then
-    vi $MSH/msh-$1/$1.msh -s "$MOS_TMP/rc.vi"
-  else
-    vi $MSH/msh-$1/$1.msh -s "$MOS_TMP/rc1.vi"
-  fi
+	vi $MSH/msh-$module/$module.msh -s "$MOS_TMP/rc.vi"
 	mr
 }
 
@@ -1888,6 +1883,7 @@ tn() {
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
+				mc) e vi $MSH/msh-$n/$n.msh -s "$MOS_TMP/rc.vi"; mr;;
         *) echo Done nothing.;;
     esac
 }
