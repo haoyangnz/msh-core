@@ -1938,7 +1938,7 @@ done
 
 # General Navigation {{{
 
-export MODE=VUE
+export MODE=SCD
 
 # Selecting the development mode
 mode() {
