@@ -484,7 +484,7 @@ export MSHRC=~/.mshrc
 # MSH : Reload
 # mr : Reload MSH
 mr() {
-  ~ $MSH_CORE
+  source $MSH_CORE
 }
 
 # MSH : Configure
@@ -2418,7 +2418,7 @@ vsm() {
 # vd : Show repository diff
 vd() {
 	case $(vt) in
-		GIT) git diff $@;;
+		GIT) git diff -w $@;;
 		SVN) svn diff $@;;
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
