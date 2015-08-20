@@ -1,6 +1,9 @@
 #### TODO {{{
+# Adjust pager line and line dividers based on screen size
+# Separate personal MSH settings to dotfile
 # Renaming of methods checks plugins		
 # Fix mtp		
+# More proactive msh-guess
 # Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp		
 # Split file		
 # General de-numbering		
@@ -102,9 +105,8 @@ add-zsh-hook precmd msh-assist
 # (Internal) Shell : Top Prompt
 # _stp : Show top prompt
 _stp() {
-  #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
-  e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(vt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
+	# TODO Because this is called from zle, vt is very slow - How to deal with this?
+	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH   $BLUE $MODE | $PJ$FINISH   $GREEN $SV$FINISH"
   e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
