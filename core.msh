@@ -678,6 +678,7 @@ alias beep='paplay $BEEP'
 
 alias bc='bc -l'
 alias emacs='emacs -nw'
+alias vi='vim'
 
 case $OS in
   GNU) alias lscolor='ls --color'
