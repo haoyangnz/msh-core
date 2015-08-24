@@ -482,7 +482,7 @@ export MSHRC=~/.mshrc
 # MSH : Reload
 # mr : Reload MSH
 mr() {
-  ~ $MSH_CORE
+  source $MSH_CORE
 }
 
 # MSH : Configure
