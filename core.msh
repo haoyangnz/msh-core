@@ -158,7 +158,7 @@ wtt() {
 # (Internal) MSH : Assist
 msh-assist() {
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vs | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vs | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
@@ -1877,7 +1877,6 @@ tn() {
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
-        vs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
@@ -1887,6 +1886,10 @@ tn() {
 						esac;;
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
+						esac;;
+				vs) case $2 in
+								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
+								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
 						esac;;
 				mc) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
@@ -1932,7 +1935,7 @@ done
 
 #}}}
 
-#### General Developement {{{
+#### General Developement {{{# {{{
 
 # General Navigation {{{
 
@@ -2394,10 +2397,21 @@ vt() {
 # vs : Show status of repository
 vs() {
 	case $(vt) in
-		GIT) git status;;
-		SVN) pn st "svn status";;
+		GIT) pn vs "git status -s";;
+		SVN) pn vs "svn status";;
 		N/A) e current directory not under version control;;
 		*) e vs is not supported for your repository type;;
+	esac
+}
+
+# Version Control : Status Verbose
+# vs : Show status of repository
+vsb() {
+	case $(vt) in
+		GIT) git status -s;;
+		SVN) svn status;;
+		N/A) e current directory not under version control;;
+		*) e vsb is not supported for your repository type;;
 	esac
 }
 
@@ -2421,6 +2435,7 @@ vd() {
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
 	esac
+	vs
 }
 
 dt() {
@@ -2440,6 +2455,18 @@ cia() {
 
 todo() {
 	svn diff | s todo | ts "^.*TODO "
+}
+
+# Version Control : Reset
+# vr file : Discard changes on file
+vr() {
+	case $(vt) in
+		GIT) git checkout -- $1;;
+		SVN) svn revert $1;;
+		N/A) e current directory not under version control;;
+		*) e vr is not supported for your repository type;;
+	esac
+	vs
 }
 
 # Version Control : Commit
@@ -2576,7 +2603,7 @@ note() {
 
 # }}}
 
-#}}}
+#}}}# }}}
 
 #### General Application {{{
 
