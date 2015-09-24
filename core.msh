@@ -2408,7 +2408,7 @@ vs() {
 # vs : Show status of repository
 vsb() {
 	case $(vt) in
-		GIT) git status -s;;
+		GIT) git status;;
 		SVN) svn status;;
 		N/A) e current directory not under version control;;
 		*) e vsb is not supported for your repository type;;
