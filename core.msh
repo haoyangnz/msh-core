@@ -1037,7 +1037,9 @@ bu() {
 
 # Back Up : Back Up Remove
 bur() {
-  mv $1 $1.bak
+  for file in $@; do
+    mv $file $file.bak
+  done
 }
 
 # TODO pbr
@@ -1052,8 +1054,9 @@ pb() {
 }
 
 pbr() {
-  r $1
-  m $1.bak $1
+  for file in $@; do
+    m $file.bak $file
+  done
 }
 
 # TODO
