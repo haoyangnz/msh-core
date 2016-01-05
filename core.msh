@@ -2241,9 +2241,9 @@ svncomment() {
 
 svnlog() {
   if [[ $1 = "" ]]; then
-    svn log | head -5000 | head -30
+    svnf log | head -5000 | head -30
   else
-    svn log | head -5000 | s -C2 $1 | head -30
+    svnf log | head -5000 | s -C2 $1 | head -30
   fi
 }
 
@@ -2253,6 +2253,15 @@ svndi() {
 
 # Version Control : Branch
 vb() {
+  if [[ $1 == "" ]]; then
+    _vb
+  elif git rev-parse --verify $1; then
+    vbs $1
+  else
+    vbn $1
+  fi
+}
+_vb() {
 	case $(vt) in
 		GIT) pn vb "git branch --color -a $@";;
 		N/A) e current directory not under version control;;
