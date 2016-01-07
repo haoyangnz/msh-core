@@ -1259,11 +1259,12 @@ export MUTTRC=$RC/.muttrc
 export XMODMAP=$RC/.Xmodmap
 export DIRCOLORSRC=$RC/.dir_colors
 
-dl $ZSHRC ~
-dl $VIMRC ~
-dl $TMUXRC ~
-dl $MUTTRC ~
-dl $DIRCOLORSRC ~
+# TODO msh should not determine the placing of rc files
+#dl $ZSHRC ~
+#dl $VIMRC ~
+#dl $TMUXRC ~
+#dl $MUTTRC ~
+#dl $DIRCOLORSRC ~
 
 # Configure Vi
 vrc() {
