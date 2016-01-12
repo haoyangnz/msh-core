@@ -2739,7 +2739,7 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # TODO coreutils for BSD
 case $OS in
-	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
+	GNU) deps=(zsh urxvt tmux vim emacs git tree grc sshfs xclip ssh-copy-id);;
 	BSD) deps=(zsh tmux vim irssi emacs git tree grc node neo4j ssh-copy-id);;
 esac
 for dep in $deps; do
