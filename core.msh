@@ -1890,6 +1890,7 @@ tn() {
 						esac;;
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
+								s) if [[ $(vt) == "GIT" ]]; then e vbs $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
 				vs) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
