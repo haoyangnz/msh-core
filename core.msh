@@ -593,7 +593,7 @@ mp() {
 # MSH : Help
 # mh sl : Show the documentation of command sl
 mh() {
-  cat $MSH_CORE | sc "^$1\(" -B2 | head -2
+  cat $MSH/msh-*/*.msh | sc "^$1\(" -B2 | head -2
 }
 
 # MSH : Help Verbose
@@ -607,7 +607,7 @@ mhv() {
 # ml grep : List all command documentation with the keyword grep
 ml() {
   pattern="#.*$(kw $@)"
-  cat $MSH_CORE | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
+  cat $MSH/msh-*/*.msh | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
 }
 
 # TODO seem to erase MAP_REV_SOURCE to MAP_REV
