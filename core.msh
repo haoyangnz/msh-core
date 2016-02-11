@@ -582,6 +582,7 @@ mpp() {
 }
 
 # MSH : Publish
+# mp "Fixed the mp doc" : Publishes changes to all msh modules with the commit message "Fixed the mp doc"
 mp() {
 	mcp $1
 	for plugin in $(ls $MSH); do
@@ -1189,6 +1190,15 @@ ms() {
 
 export TRASH=$MOS_ROOT/.Trash
 export ARCHIVE=$MOS_ROOT/.Archive
+
+# Remaps rm to r
+rm() {
+  for arg in $@; do
+    if [[ $arg != "-*" ]]; then
+      r $arg
+    fi
+  done
+}
 
 # Remove Utility: Remove
 # r file : Move file to trash
@@ -2009,13 +2019,13 @@ sql() {
   else
     DB=${SQL_PREFIX}$1
   fi
-  mysql -uroot -proot $DB "${@:2}"
+  sql $DB "${@:2}"
 }
 
 # Find table in databases
 sqlf() {
-  for database in $(mysql -uroot -proot -e "show databases" | s $SQL_PREFIX); do
-    if table=$(mysql -uroot -proot $database -e "show tables" | s $(pab $1)); then
+  for database in $(sqle "show databases" | s $SQL_PREFIX); do
+    if table=$(sql $database -e "show tables" | s $(pab $1)); then
       e $database
       e $table
       e
@@ -2026,26 +2036,26 @@ sqlf() {
 # SQL : SQL List Database
 # sqlld : List all databases under the SQL_PREFIX
 sqlld() {
-  mysql -uroot -proot -e "show databases" | s "^$SQL_PREFIX" | sed "s/^$SQL_PREFIX//"
+  sqle "show databases" | s "^$SQL_PREFIX" | sed "s/^$SQL_PREFIX//"
 }
 
 # Rename SQL database
 sqlmv() {
-  mysql -uroot -proot -e "create database ${SQL_PREFIX}$2"
-  for table in `mysql -uroot -proot -B -N -e "show tables" ${SQL_PREFIX}$1`; do 
-    mysql -uroot -proot -e "rename table ${SQL_PREFIX}$1.$table to ${SQL_PREFIX}$2.$table"
+  sqle "create database ${SQL_PREFIX}$2"
+  for table in `sql -B -N -e "show tables" ${SQL_PREFIX}$1`; do 
+    sqle "rename table ${SQL_PREFIX}$1.$table to ${SQL_PREFIX}$2.$table"
   done
-  mysql -uroot -proot -e "drop database ${SQL_PREFIX}$1"
+  sqle "drop database ${SQL_PREFIX}$1"
 }
 
 # Drop SQL database
 sqlrm() {
-  mysql -uroot -proot -e "drop database "${SQL_PREFIX}$1""
+  sqle "drop database "${SQL_PREFIX}$1""
 }
 
 # Create SQL database
 sqlmk() {
-  mysql -uroot -proot -e "create database "${SQL_PREFIX}$1""
+  sqle "create database "${SQL_PREFIX}$1""
 }
 
 # Import SQL script to database
@@ -2079,21 +2089,21 @@ sqlo() {
   fi
   for db in $(sqlld); do
     sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
-    mysqldump --skip-tz-utc -uroot -proot $SQL_PREFIX$db > $sqlfile
+    mysqldump --skip-tz-utc -u$MSH_SQL_USER -p$MSH_SQL_PASS $SQL_PREFIX$db > $sqlfile
   done
   wtt "sqlo [DONE]"
 }
 
 # Show SQL process list
 sqlp() {
-  mysql -uroot -proot -e "show processlist"
+  sqle "show processlist"
 }
 
 # Execute SQL in database
 sqle() {
   table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
   database=$(sqlf $table | pl 1 1)
-  eval "mysql -uroot -proot $database -e \"$@\""
+  eval "sql $database -e \"$@\""
 }
 
 # SQL Utility : SQL Query
@@ -2133,7 +2143,7 @@ sqlt() {
 }
 sqlte() {
   database=$(sqlf $1)
-  mysql -uroot -proot $database -e "select * from $1 limit 1 \G;" | vi -
+  sql $database -e "select * from $1 limit 1 \G;" | vi -
 }
 
 # }}}
@@ -2291,14 +2301,15 @@ vbn() {
 }
 
 # Version Control : Branch Checkout
-vbc() {
-	case $(vt) in
-		GIT) git checkout -b $1 origin/$1;;
-		N/A) e current directory not under version control;;
-		*) e vb is not supported for your repository type;;
-	esac
-	vb
-}
+# TODO Collides with existing vbc
+#vbc() {
+#	case $(vt) in
+#		GIT) git checkout -b $1 origin/$1;;
+#		N/A) e current directory not under version control;;
+#		*) e vb is not supported for your repository type;;
+#	esac
+#	vb
+#}
 
 # Version Control : Branch Switch
 vbs() {
@@ -2505,7 +2516,7 @@ vc() {
 # vca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
 vca() {
 	case $(vt) in
-		GIT) git commit -a -m $1;;
+		GIT) git add . && git commit -a -m $1;;
 		SVN) e vca is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
@@ -2740,7 +2751,7 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # TODO coreutils for BSD
 case $OS in
-	GNU) deps=(zsh urxvt tmux vim emacs git tree grc sshfs xclip ssh-copy-id);;
+	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
 	BSD) deps=(zsh tmux vim irssi emacs git tree grc node neo4j ssh-copy-id);;
 esac
 for dep in $deps; do
