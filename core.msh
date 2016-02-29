@@ -1894,7 +1894,7 @@ tn() {
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbch $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
@@ -2014,12 +2014,11 @@ sci() {
 
 # Run SQL with credentials and database
 sql() {
-  if [[ $1 = "" ]]; then
-    DB=""
+  if [[ $1 = "" || $1 = "-"* ]]; then
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS "$@"
   else
-    DB=${SQL_PREFIX}$1
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $SQL_PREFIX$1 "${@:2}"
   fi
-  sql $DB "${@:2}"
 }
 
 # Find table in databases
@@ -2101,9 +2100,14 @@ sqlp() {
 
 # Execute SQL in database
 sqle() {
-  table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
-  database=$(sqlf $table | pl 1 1)
-  eval "sql $database -e \"$@\""
+  if echo $@ | grep database; then
+    eval "sql -e \"$@\""
+  else
+    echo B
+    table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
+    database=$(sqlf $table | pl 1 1)
+    eval "sql $database -e \"$@\""
+  fi
 }
 
 # SQL Utility : SQL Query
@@ -2301,15 +2305,14 @@ vbn() {
 }
 
 # Version Control : Branch Checkout
-# TODO Collides with existing vbc
-#vbc() {
-#	case $(vt) in
-#		GIT) git checkout -b $1 origin/$1;;
-#		N/A) e current directory not under version control;;
-#		*) e vb is not supported for your repository type;;
-#	esac
-#	vb
-#}
+vbch() {
+	case $(vt) in
+		GIT) git checkout -b $1 origin/$1;;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
+}
 
 # Version Control : Branch Switch
 vbs() {
