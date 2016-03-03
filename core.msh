@@ -2190,7 +2190,7 @@ rv() {
 }
 
 # SVN Rollback
-# rb 1000 1004 : Roll back changes from revision 1000 to 1004
+# rb 1000 1004 : Roll back changes from revision 1000 to 1004 (Exclusive - Inclusive)
 rb() {
   if [[ $2 == "" ]]; then
     svn merge -c -$1 .
