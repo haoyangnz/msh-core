@@ -536,6 +536,35 @@ mi() {
 	mr
 }
 
+# MSH : Upgrade
+# mu : Upgrade all MSH packages
+mu() {
+	for package in $(ls $MSH); do
+    if [[ $package == "msh-rc" ]]; then
+      continue
+    fi
+    cd $MSH/$package
+    e "Upgrading $package.."
+    if ! evn git remote show upstream; then
+      e "There's no upstream configured to upgrade from."
+      e "Please enter a github owner to use their $package as the upstream to upgrade from, or press enter to skip the upgrade for this module:"
+      read upstream_owner
+      if [[ $upstream_owner == "" ]]; then
+        e "Skipped the upgrades for $package"
+        e
+        continue
+      fi
+      git remote add upstream https://github.com/$upstream_owner/$package.git
+    fi
+    git fetch upstream
+    git checkout master
+    git merge upstream/master
+    e "Upgraded $package."
+    e
+	done
+  e "All upgrades complete."
+}
+
 # MSH : Build
 # mb : Run tests on the current MSH library
 mb() {
