@@ -102,17 +102,26 @@ add-zsh-hook precmd msh-assist
 # (Internal) Shell : Top Prompt
 # _stp : Show top prompt
 _stp() {
-  #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  _stp_id
+  _stp_command
+}
+
+# _stp_id : Show shell identifier in top prompt
+_stp_id() {
   e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(vt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+}
+
+# _stp_command : Show command input and intepretation in top prompt
+_stp_command() {
+  stp_hr=$(printf '-%.0s' {1..$(($SCREEN_WIDTH))})
+  e $BRCYAN$stp_hr$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
   usr_line_lth=$(echo $usr_line | decolor | wc -c)
   printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e $GREEN MOS: $FINISH
 }
 
@@ -163,9 +172,9 @@ msh-assist() {
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
 	e
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 	e $MAGENTA MSH: $MSH_ASSIST $FINISH
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 }
 
 # TODO Tab to expand current word - progress guess
@@ -478,6 +487,18 @@ export MSH=~/msh
 export MSH_CORE=$MSH/msh-core/core.msh
 export MSHRC=~/.mshrc
 
+# Load Core Configurations {{{
+
+mkdir -p $MSH/msh-rc
+cd $MSH/msh-rc
+if [[ ! -a msh-core.mshrc ]]; then
+  cp $MSH/msh-core/msh-core.mshrc .
+  vi msh-core.mshrc
+fi
+source msh-core.mshrc
+
+# }}}
+
 # TODO Could be started by loading a bootstrapping msh which also indexes available msh modules
 # MSH : Reload
 # mr : Reload MSH
@@ -513,6 +534,35 @@ mc() {
 mi() {
 	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
 	mr
+}
+
+# MSH : Upgrade
+# mu : Upgrade all MSH packages
+mu() {
+	for package in $(ls $MSH); do
+    if [[ $package == "msh-rc" ]]; then
+      continue
+    fi
+    cd $MSH/$package
+    e "Upgrading $package.."
+    if ! evn git remote show upstream; then
+      e "There's no upstream configured to upgrade from."
+      e "Please enter a github owner to use their $package as the upstream to upgrade from, or press enter to skip the upgrade for this module:"
+      read upstream_owner
+      if [[ $upstream_owner == "" ]]; then
+        e "Skipped the upgrades for $package"
+        e
+        continue
+      fi
+      git remote add upstream https://github.com/$upstream_owner/$package.git
+    fi
+    git fetch upstream
+    git checkout master
+    git merge upstream/master
+    e "Upgraded $package."
+    e
+	done
+  e "All upgrades complete."
 }
 
 # MSH : Build
@@ -819,11 +869,6 @@ ts() {
 
 # Pager {{{
 
-# Pager : Pager Size
-# PAGER_SIZE=30 : Set the pager size to 30
-PAGER_SIZE=15
-PAGER_WIDTH=100
-
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
@@ -1055,8 +1100,21 @@ pb() {
 }
 
 pbr() {
+  if [[ $1 == "" ]]; then
+    _pbr *.bak
+  else
+    _pbr $@
+  fi
+  l
+}
+
+_pbr() {
   for file in $@; do
-    m $file.bak $file
+    if [[ $file == *.bak ]]; then
+      mtp $file "$(echo \$f | ts .bak)"
+    else
+      m $file.bak $file
+    fi
   done
 }
 
@@ -1163,10 +1221,9 @@ m() {
 }
 
 # Move : Move Text Process
-# mm *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
+# mtp *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
 mtp() {
 	for f in ${@:1:-1}; do
-		e "mv $f $@[-1]"
 		eve "mv $f $@[-1]"
 	done
 }
@@ -1573,7 +1630,7 @@ pf() {
 # pk java tss : Kill all processes that includes "java" and "tss" in its details, order significant
 pk() {
 	case $OS in
-			GNU) pf $@ | cut -d " " -f 2 | xargs kill -9;;
+			GNU) pf $@ | ac 2 | xargs kill -9;;
 			BSD) pf $@ | cut -d " " -f 4 | xargs kill -9;;
 	esac
 }
@@ -1894,7 +1951,7 @@ tn() {
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbch $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
@@ -2248,7 +2305,7 @@ tco() {
 }
 
 svncomment() {
-  svn propset svn:log --revprop -r $1 $2 $SVN
+  svnf propset svn:log --revprop -r $1 \"$2\" $SVN
 }
 
 svnlog() {
@@ -2301,15 +2358,14 @@ vbn() {
 }
 
 # Version Control : Branch Checkout
-# TODO Collides with existing vbc
-#vbc() {
-#	case $(vt) in
-#		GIT) git checkout -b $1 origin/$1;;
-#		N/A) e current directory not under version control;;
-#		*) e vb is not supported for your repository type;;
-#	esac
-#	vb
-#}
+vbch() {
+	case $(vt) in
+		GIT) git checkout -b $1 origin/$1;;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
+}
 
 # Version Control : Branch Switch
 vbs() {
@@ -2751,8 +2807,8 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # TODO coreutils for BSD
 case $OS in
-	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
-	BSD) deps=(zsh tmux vim irssi emacs git tree grc node neo4j ssh-copy-id);;
+	GNU) deps=(zsh tmux vim git tree grc sshfs xclip ssh-copy-id);;
+	BSD) deps=(zsh tmux vim git tree grc ssh-copy-id);;
 esac
 for dep in $deps; do
 	wn $dep || pi $dep
@@ -2800,8 +2856,15 @@ esac
 
 d $MSH
 for plugin in $(ls); do
-	if [[ $plugin != msh-core ]]; then
-		. $plugin/*.msh
+	if [[ $plugin != msh-core && $plugin != msh-rc ]]; then
+    if [[ -a $plugin/$plugin.mshrc && ! -a msh-rc/$plugin.mshrc ]]; then
+      cp $plugin/$plugin.mshrc msh-rc
+      vi msh-rc/$plugin.mshrc
+    fi
+    if [[ -a msh-rc/$plugin.mshrc ]]; then
+      source msh-rc/$plugin.mshrc
+    fi
+		source $plugin/*.msh
 	fi
 done
 
