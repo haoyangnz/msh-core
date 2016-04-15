@@ -102,17 +102,26 @@ add-zsh-hook precmd msh-assist
 # (Internal) Shell : Top Prompt
 # _stp : Show top prompt
 _stp() {
-  #e " ${MAGENTA}MSH-$$   $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$MODE | $PJ   $GREEN$MAP_REV | $MAP_DATA_REV $FINISH"
+  _stp_id
+  _stp_command
+}
+
+# _stp_id : Show shell identifier in top prompt
+_stp_id() {
   e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
-  e " $CYAN$(rnode $CDS \/ 1) $(rnode $CDS \/ 0)   $BLUE$(vt) | $MODE | $PJ   $GREEN $SV | $MAP_REV | $MAP_DATA_REV $FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+}
+
+# _stp_command : Show command input and intepretation in top prompt
+_stp_command() {
+  stp_hr=$(printf '-%.0s' {1..$(($SCREEN_WIDTH))})
+  e $BRCYAN$stp_hr$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
   usr_line_lth=$(echo $usr_line | decolor | wc -c)
   printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e $GREEN MOS: $FINISH
 }
 
@@ -163,9 +172,9 @@ msh-assist() {
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
 	e
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 	e $MAGENTA MSH: $MSH_ASSIST $FINISH
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 }
 
 # TODO Tab to expand current word - progress guess
@@ -477,6 +486,18 @@ export MSH_PREFERRED_REPOSITORY_TYPE=GIT
 export MSH=~/msh
 export MSH_CORE=$MSH/msh-core/core.msh
 export MSHRC=~/.mshrc
+
+# Load Core Configurations {{{
+
+mkdir -p $MSH/msh-rc
+cd $MSH/msh-rc
+if [[ ! -a msh-core.mshrc ]]; then
+  cp $MSH/msh-core/msh-core.mshrc .
+  vi msh-core.mshrc
+fi
+source msh-core.mshrc
+
+# }}}
 
 # TODO Could be started by loading a bootstrapping msh which also indexes available msh modules
 # MSH : Reload
@@ -819,11 +840,6 @@ ts() {
 
 # Pager {{{
 
-# Pager : Pager Size
-# PAGER_SIZE=30 : Set the pager size to 30
-PAGER_SIZE=15
-PAGER_WIDTH=100
-
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
@@ -1055,8 +1071,21 @@ pb() {
 }
 
 pbr() {
+  if [[ $1 == "" ]]; then
+    _pbr *.bak
+  else
+    _pbr $@
+  fi
+  l
+}
+
+_pbr() {
   for file in $@; do
-    m $file.bak $file
+    if [[ $file == *.bak ]]; then
+      mtp $file "$(echo \$f | ts .bak)"
+    else
+      m $file.bak $file
+    fi
   done
 }
 
@@ -1163,10 +1192,9 @@ m() {
 }
 
 # Move : Move Text Process
-# mm *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
+# mtp *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
 mtp() {
 	for f in ${@:1:-1}; do
-		e "mv $f $@[-1]"
 		eve "mv $f $@[-1]"
 	done
 }
@@ -1573,7 +1601,7 @@ pf() {
 # pk java tss : Kill all processes that includes "java" and "tss" in its details, order significant
 pk() {
 	case $OS in
-			GNU) pf $@ | cut -d " " -f 2 | xargs kill -9;;
+			GNU) pf $@ | ac 2 | xargs kill -9;;
 			BSD) pf $@ | cut -d " " -f 4 | xargs kill -9;;
 	esac
 }
@@ -1894,7 +1922,7 @@ tn() {
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbch $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
@@ -2248,7 +2276,7 @@ tco() {
 }
 
 svncomment() {
-  svn propset svn:log --revprop -r $1 $2 $SVN
+  svnf propset svn:log --revprop -r $1 \"$2\" $SVN
 }
 
 svnlog() {
@@ -2301,15 +2329,14 @@ vbn() {
 }
 
 # Version Control : Branch Checkout
-# TODO Collides with existing vbc
-#vbc() {
-#	case $(vt) in
-#		GIT) git checkout -b $1 origin/$1;;
-#		N/A) e current directory not under version control;;
-#		*) e vb is not supported for your repository type;;
-#	esac
-#	vb
-#}
+vbch() {
+	case $(vt) in
+		GIT) git checkout -b $1 origin/$1;;
+		N/A) e current directory not under version control;;
+		*) e vb is not supported for your repository type;;
+	esac
+	vb
+}
 
 # Version Control : Branch Switch
 vbs() {
@@ -2800,8 +2827,15 @@ esac
 
 d $MSH
 for plugin in $(ls); do
-	if [[ $plugin != msh-core ]]; then
-		. $plugin/*.msh
+	if [[ $plugin != msh-core && $plugin != msh-rc ]]; then
+    if [[ -a $plugin/$plugin.mshrc && ! -a msh-rc/$plugin.mshrc ]]; then
+      cp $plugin/$plugin.mshrc msh-rc
+      vi msh-rc/$plugin.mshrc
+    fi
+    if [[ -a msh-rc/$plugin.mshrc ]]; then
+      source msh-rc/$plugin.mshrc
+    fi
+		source $plugin/*.msh
 	fi
 done
 
