@@ -2072,11 +2072,13 @@ sci() {
 # Run SQL with credentials and database
 sql() {
   if [[ $1 = "" ]]; then
-    DB=""
-  else
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS
+  elif [[ $2 == "" ]]; then
     DB=${SQL_PREFIX}$1
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $DB
+  else
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $@
   fi
-  sql $DB "${@:2}"
 }
 
 # Find table in databases
@@ -2158,9 +2160,13 @@ sqlp() {
 
 # Execute SQL in database
 sqle() {
-  table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
-  database=$(sqlf $table | pl 1 1)
-  eval "sql $database -e \"$@\""
+  if [[ $(echo $@) == *"database"* ]]; then
+    eval "sql -e \"$@\""
+  else
+    table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
+    database=$(sqlf $table | pl 1 1)
+    eval "sql $database -e \"$@\""
+  fi
 }
 
 # SQL Utility : SQL Query
