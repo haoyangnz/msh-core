@@ -2071,10 +2071,13 @@ sci() {
 
 # Run SQL with credentials and database
 sql() {
-  if [[ $1 = "" || $1 = "-"* ]]; then
-    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS "$@"
+  if [[ $1 = "" ]]; then
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS
+  elif [[ $2 == "" ]]; then
+    DB=${SQL_PREFIX}$1
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $DB
   else
-    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $SQL_PREFIX$1 "${@:2}"
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $@
   fi
 }
 
@@ -2157,10 +2160,9 @@ sqlp() {
 
 # Execute SQL in database
 sqle() {
-  if echo $@ | grep database; then
+  if [[ $(echo $@) == *"database"* ]]; then
     eval "sql -e \"$@\""
   else
-    echo B
     table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
     database=$(sqlf $table | pl 1 1)
     eval "sql $database -e \"$@\""
