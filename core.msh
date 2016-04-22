@@ -167,7 +167,7 @@ wtt() {
 # (Internal) MSH : Assist
 msh-assist() {
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $MSH_MAIN_BRANCH ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
@@ -2385,10 +2385,10 @@ vbs() {
 }
 
 # Version Control : Branch Merge
-# vbm : Merge from master
+# vbm : Merge from $MSH_MAIN_BRANCH
 vbm() {
 	case $(vt) in
-		GIT) if [[ $1 == "" ]]; then git merge master; else git merge $1; fi;;
+		GIT) if [[ $1 == "" ]]; then git merge $MSH_MAIN_BRANCH; else git merge $1; fi;;
 		SVN) svn merge -c $1 .;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
@@ -2397,15 +2397,15 @@ vbm() {
 }
 
 # Version Control : Branch Merge Diff Incoming Count
-# vbmdic : Show how many commits coming in when merging from master (behind master)
+# vbmdic : Show how many commits coming in when merging from $MSH_MAIN_BRANCH (behind $MSH_MAIN_BRANCH)
 vbmdic() {
-	git rev-list --left-right --count master... | cut -f1
+	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f1
 }
 
 # Version Control : Branch Merge Diff Outgoing Count
-# vbmdoc : Show how many commits going out when merging to master (ahead of master)
+# vbmdoc : Show how many commits going out when merging to $MSH_MAIN_BRANCH (ahead of $MSH_MAIN_BRANCH)
 vbmdoc() {
-	git rev-list --left-right --count master... | cut -f2
+	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f2
 }
 
 # Version Control : Branch Delete
@@ -2413,8 +2413,8 @@ vbd() {
 	case $(vt) in
 		GIT) 
 			if [[ $1 == $(vbc) ]]; then
-				# Trying to delete current branch, switch to master first
-				git checkout master
+				# Trying to delete current branch, switch to $MSH_MAIN_BRANCH first
+				git checkout $MSH_MAIN_BRANCH
 				git branch -d $@
 			else
 				git branch -d $@

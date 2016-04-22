@@ -5,3 +5,6 @@ export MSH_SQL_PASS=root
 export SCREEN_WIDTH=110
 export PAGER_WIDTH=100
 export PAGER_SIZE=15
+
+# Ancestor of the feature branch to use instead of master
+export MSH_MAIN_BRANCH=master
