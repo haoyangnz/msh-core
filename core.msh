@@ -2620,6 +2620,19 @@ vu() {
 	case $(vt) in
 		GIT) git pull;;
 		SVN) svn up;;
+		GITSVN) 
+			vbc=$(vbc)
+			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
+				vbs $MSH_MAIN_BRANCH
+			fi
+			svn up
+			git add .
+			vca "svn up"
+			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
+				vbs $vbc
+				vbm $MSH_MAIN_BRANCH
+			fi
+			;;
 		N/A) e current directory not under version control;;
 	esac
 }
