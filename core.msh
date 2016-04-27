@@ -506,11 +506,11 @@ mr() {
   source $MSH_CORE
 }
 
-# MSH : Configure
-# mc : Configure MSH core
-# mc java : Configure msh-java module
-# mc sl : Configure the command 'sl'
-mc() {
+# MSH : Edit
+# me : Edit MSH core
+# me java : Edit msh-java module
+# me sl : Edit the command 'sl'
+me() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   if [[ $1 == "" ]]; then
 		module=core
@@ -521,12 +521,24 @@ mc() {
 		echo "zR/^$1\(" > $MOS_TMP/rc.vi
 		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
 		if [[ $(echo $module | wc -l) > 1 ]]; then
-			pn mc "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
+			pn me "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
 			return
 		fi
   fi
 	vi $MSH/msh-$module/$module.msh -s "$MOS_TMP/rc.vi"
 	mr
+}
+
+# MSH : Configure
+# mc : Configure msh-core.mshrc in msh-rc
+# mc java : Configure msh-java.mshrc in msh-rc
+mc() {
+  if [[ $1 == "" ]]; then
+    module=core
+  else
+    module=$1
+  fi
+  vi $MSH/msh-rc/msh-$module.mshrc
 }
 
 # MSH : Install
@@ -1963,7 +1975,7 @@ tn() {
 								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
 								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
 						esac;;
-				mc) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
+				me) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
     esac
 }
