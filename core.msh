@@ -541,6 +541,20 @@ mc() {
   vi $MSH/msh-rc/msh-$module.mshrc
 }
 
+# MSH : Configure Variable
+# mcv PAGER_SIZE 200 : Change variable PAGER_SIZE to 200 in the core module
+# mcv JPJ inv2 kiwiplan :  Change variable JPJ to inv2 in the kiwiplan module
+mcv() {
+	if [[ $3 == "" ]]; then
+    rc_file=$MSH/msh-core/core.msh
+	else
+    rc_file=$MSH/msh-rc/msh-$3.mshrc
+	fi
+	rep=$(echo $2 | esr)
+	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
+	mr
+}
+
 # MSH : Install
 # mi haoyangnz node : Install MSH module "msh-node" from haoyangnz's github repository msh-node
 mi() {
@@ -670,20 +684,6 @@ mhv() {
 ml() {
   pattern="#.*$(kw $@)"
   cat $MSH/msh-*/*.msh | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
-}
-
-# TODO seem to erase MAP_REV_SOURCE to MAP_REV
-# crc PAGER_SIZE 200 : Change variable PAGER_SIZE to 200 in the core module
-# crc JPJ inv2 kiwiplan :  Change variable JPJ to inv2 in the kiwiplan module
-crc() {
-	if [[ $3 == "" ]]; then
-    rc_file=$MSH/msh-core/core.msh
-	else
-    rc_file=$MSH/msh-rc/msh-$3.mshrc
-	fi
-	rep=$(echo $2 | esr)
-	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
-	mr
 }
 
 # }}}
@@ -2029,7 +2029,7 @@ export MODE=VUE
 # Selecting the development mode
 mode() {
   menu "echo 'VUE\nMAP\nSCD'"
-  crc MODE $menu
+  mcv MODE $menu
 }
 
 # Go to projects directory, depending on the development mode
@@ -2274,8 +2274,8 @@ rb() {
 # SVN Merge Out Utility
 # mo : Merge out the changes from head branch to base
 rmo() {
-  crc MMB $MHD
-  crc JMB $JHD
+  mcv MMB $MHD
+  mcv JMB $JHD
   pj
   svn merge $PJ_ROOT/$MB
 }
@@ -2283,8 +2283,8 @@ rmo() {
 # SVN Merge In Utility
 # rmi : Merge in the changes from base to head branch
 rmi() {
-  crc MMB $MPJ
-  crc JMB $JPJ
+  mcv MMB $MPJ
+  mcv JMB $JPJ
   hd
   if [[ $1 = "" ]]; then
     svn merge --reintegrate $PJ_ROOT/$MB
