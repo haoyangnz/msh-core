@@ -2729,7 +2729,7 @@ work() {
 # Sandbox: Sandbox
 # sb : Go to the Sandbox directory
 sb() {
-  o $SANDBOX
+  d $SANDBOX
 }
 
 # Edit note
