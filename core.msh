@@ -105,16 +105,27 @@ add-zsh-hook precmd msh-assist
 # (Internal) Shell : Top Prompt
 # _stp : Show top prompt
 _stp() {
+  _stp_id
+  _stp_command
+}
+
+# _stp_id : Show shell identifier in top prompt
+_stp_id() {
 	# TODO Because this is called from zle, vt is very slow - How to deal with this?
 	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH   $BLUE $MODE | $PJ$FINISH   $GREEN $SV$FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+}
+
+# _stp_command : Show command input and intepretation in top prompt
+_stp_command() {
+  stp_hr=$(printf '-%.0s' {1..$(($SCREEN_WIDTH))})
+  e $BRCYAN$stp_hr$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
   usr_line_lth=$(echo $usr_line | decolor | wc -c)
   printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
-  e $BRCYAN-------------------------------------------------------------------------------------------------------$FINISH
+  e $BRCYAN$stp_hr$FINISH
   e $GREEN MOS: $FINISH
 }
 
@@ -160,14 +171,14 @@ wtt() {
 # (Internal) MSH : Assist
 msh-assist() {
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vs | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vs | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind master ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of master ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to master ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $MSH_MAIN_BRANCH ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
 	e
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 	e $MAGENTA MSH: $MSH_ASSIST $FINISH
-	e ${BRCYAN}-------------------------------------------------------------------------------------------------------${FINISH}
+	e $BRCYAN$stp_hr$FINISH
 }
 
 # TODO Tab to expand current word - progress guess
@@ -480,6 +491,18 @@ export MSH=~/msh
 export MSH_CORE=$MSH/msh-core/core.msh
 export MSHRC=~/.mshrc
 
+# Load Core Configurations {{{
+
+mkdir -p $MSH/msh-rc
+cd $MSH/msh-rc
+if [[ ! -a msh-core.mshrc ]]; then
+  cp $MSH/msh-core/msh-core.mshrc .
+  vi msh-core.mshrc
+fi
+source msh-core.mshrc
+
+# }}}
+
 # TODO Could be started by loading a bootstrapping msh which also indexes available msh modules
 # MSH : Reload
 # mr : Reload MSH
@@ -487,11 +510,11 @@ mr() {
   source $MSH_CORE
 }
 
-# MSH : Configure
-# mc : Configure MSH core
-# mc java : Configure msh-java module
-# mc sl : Configure the command 'sl'
-mc() {
+# MSH : Edit
+# me : Edit MSH core
+# me java : Edit msh-java module
+# me sl : Edit the command 'sl'
+me() {
   echo ":set foldmethod=marker" > $MOS_TMP/rc.vi
   if [[ $1 == "" ]]; then
 		module=core
@@ -502,11 +525,38 @@ mc() {
 		echo "zR/^$1\(" > $MOS_TMP/rc.vi
 		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
 		if [[ $(echo $module | wc -l) > 1 ]]; then
-			pn mc "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
+			pn me "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
 			return
 		fi
   fi
 	vi $MSH/msh-$module/$module.msh -s "$MOS_TMP/rc.vi"
+	mr
+}
+
+# MSH : Configure
+# mc : Configure msh-core.mshrc in msh-rc
+# mc java : Configure msh-java.mshrc in msh-rc
+mc() {
+  if [[ $1 == "" ]]; then
+    module=core
+  else
+    module=$1
+  fi
+  vi $MSH/msh-rc/msh-$module.mshrc
+}
+
+# MSH : Configure Variable
+# mcv PAGER_SIZE 200 : Change variable PAGER_SIZE to 200 in the core module
+# mcv JPJ inv2 kiwiplan :  Change variable JPJ to inv2 in the kiwiplan module
+mcv() {
+	if [[ $3 == "" ]]; then
+    module=core
+	else
+    module=$3
+	fi
+  rc_file=$MSH/msh-rc/msh-$module.mshrc
+	rep=$(echo $2 | esr)
+	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
 	mr
 }
 
@@ -515,6 +565,35 @@ mc() {
 mi() {
 	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
 	mr
+}
+
+# MSH : Upgrade
+# mu : Upgrade all MSH packages
+mu() {
+	for package in $(ls $MSH); do
+    if [[ $package == "msh-rc" ]]; then
+      continue
+    fi
+    cd $MSH/$package
+    e "${YELLOW}Upgrading $package..${FINISH}"
+    if ! evn git remote show upstream; then
+      e "${RED}There's no upstream configured to upgrade from."
+      e "Please enter a github owner to use their $package as the upstream to upgrade from, or press enter to skip the upgrade for this module:${FINISH}"
+      read upstream_owner
+      if [[ $upstream_owner == "" ]]; then
+        e "${YELLOW}Skipped the upgrades for $package${FINISH}"
+        e
+        continue
+      fi
+      git remote add upstream https://github.com/$upstream_owner/$package.git
+    fi
+    git fetch upstream
+    git checkout master
+    git merge upstream/master
+    e "${GREEN}Upgraded $package.${FINISH}"
+    e
+	done
+  e "${GREEN}All upgrades complete.${FINISH}"
 }
 
 # MSH : Build
@@ -584,6 +663,7 @@ mpp() {
 }
 
 # MSH : Publish
+# mp "Fixed the mp doc" : Publishes changes to all msh modules with the commit message "Fixed the mp doc"
 mp() {
 	mcp $1
 	for plugin in $(ls $MSH); do
@@ -594,7 +674,7 @@ mp() {
 # MSH : Help
 # mh sl : Show the documentation of command sl
 mh() {
-  cat $MSH_CORE | sc "^$1\(" -B2 | head -2
+  cat $MSH/msh-*/*.msh | sc "^$1\(" -B2 | head -2
 }
 
 # MSH : Help Verbose
@@ -608,20 +688,7 @@ mhv() {
 # ml grep : List all command documentation with the keyword grep
 ml() {
   pattern="#.*$(kw $@)"
-  cat $MSH_CORE | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
-}
-
-# TODO seem to erase MAP_REV_SOURCE to MAP_REV
-# Change variable in Zsh source
-crc() {
-	if [[ $3 == "" ]]; then
-		rc_file=$ZSHRC
-	else
-		rc_file=$MSH/msh-$3/$3.msh
-	fi
-	rep=$(echo $2 | esr)
-	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
-	mr
+  cat $MSH/msh-*/*.msh | si "\(\)" | si "^$" | si "\{\{\{" | s -C1 "$pattern"
 }
 
 # }}}
@@ -821,11 +888,6 @@ ts() {
 
 # Pager {{{
 
-# Pager : Pager Size
-# PAGER_SIZE=30 : Set the pager size to 30
-PAGER_SIZE=15
-PAGER_WIDTH=100
-
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
@@ -882,13 +944,43 @@ p() {
 
 # }}}
 
-# System functions {{{
+# Shell {{{
 
 # Shell : Test
 # st "[[ -a src ]]" : Test if src exists, and print the result
 st() {
   eval $1 && e \"$1\" is true || e \"$1\" is false
 }
+
+# Shell Variable : Back Up
+# svbu MSH : Back up the value of the shell variable $MSH to $MSH_BU
+svbu() {
+  eve export $1_BU=\$$1
+}
+
+# Shell Variable : Back Up Remove
+# svbur MSH : Back up the value of the shell variable $MSH to $MSH_BU, and unset $MSH
+svbur() {
+  eve export $1_BU=\$$1
+  unset $1
+}
+
+# Shell Variable : Put Back
+# svpb MSH : Put back the value of the shell variable $MSH from $MSH_BU
+svpb() {
+  eve export $1=\$$1_BU
+}
+
+# Shell Variable : Put Back Remove
+# svpbr MSH : Put back the value of the shell variable $MSH from $MSH_BU, and unset $MSH_BU
+svpbr() {
+  eve export $1=\$$1_BU
+  unset $1_BU
+}
+
+# }}}
+
+# System functions {{{
 
 # Clear Screen
 cs() {
@@ -1040,7 +1132,9 @@ bu() {
 
 # Back Up : Back Up Remove
 bur() {
-  mv $1 $1.bak
+  for file in $@; do
+    mv $file $file.bak
+  done
 }
 
 # TODO pbr
@@ -1055,8 +1149,22 @@ pb() {
 }
 
 pbr() {
-  r $1
-  m $1.bak $1
+  if [[ $1 == "" ]]; then
+    _pbr *.bak
+  else
+    _pbr $@
+  fi
+  l
+}
+
+_pbr() {
+  for file in $@; do
+    if [[ $file == *.bak ]]; then
+      mtp $file "$(echo \$f | ts .bak)"
+    else
+      m $file.bak $file
+    fi
+  done
 }
 
 # TODO
@@ -1162,10 +1270,9 @@ m() {
 }
 
 # Move : Move Text Process
-# mm *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
+# mtp *man* "$(echo \$f | ts man mapman)" : Replace *man* with *mapman*
 mtp() {
 	for f in ${@:1:-1}; do
-		e "mv $f $@[-1]"
 		eve "mv $f $@[-1]"
 	done
 }
@@ -1189,6 +1296,15 @@ ms() {
 
 export TRASH=$MOS_ROOT/.Trash
 export ARCHIVE=$MOS_ROOT/.Archive
+
+# Remaps rm to r
+rm() {
+  for arg in $@; do
+    if [[ $arg != "-*" ]]; then
+      r $arg
+    fi
+  done
+}
 
 # Remove Utility: Remove
 # r file : Move file to trash
@@ -1259,11 +1375,12 @@ export MUTTRC=$RC/.muttrc
 export XMODMAP=$RC/.Xmodmap
 export DIRCOLORSRC=$RC/.dir_colors
 
-dl $ZSHRC ~
-dl $VIMRC ~
-dl $TMUXRC ~
-dl $MUTTRC ~
-dl $DIRCOLORSRC ~
+# TODO msh should not determine the placing of rc files
+#dl $ZSHRC ~
+#dl $VIMRC ~
+#dl $TMUXRC ~
+#dl $MUTTRC ~
+#dl $DIRCOLORSRC ~
 
 # Configure Vi
 vrc() {
@@ -1562,7 +1679,7 @@ pf() {
 # pk java tss : Kill all processes that includes "java" and "tss" in its details, order significant
 pk() {
 	case $OS in
-			GNU) pf $@ | cut -d " " -f 2 | xargs kill -9;;
+			GNU) pf $@ | ac 2 | xargs kill -9;;
 			BSD) pf $@ | cut -d " " -f 4 | xargs kill -9;;
 	esac
 }
@@ -1880,7 +1997,6 @@ tn() {
         gs) e o $(echo $n | cut -d ":" -f 1) $(echo $n | cut -d ":" -f 2);;
         gf) if echo $n | grep -q "^[^ ]*:"; then delim=:; else delim=-; fi; o $(echo $n | cut -d $delim -f 1) $(echo $n | cut -d $delim -f 2);;
         wh) e wh $(echo $n | cut -d " " -f 1);;
-        vs) e dt $(e $n | cut -c9-);;
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
@@ -1890,8 +2006,13 @@ tn() {
 						esac;;
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
+								s) if [[ $(vt) == "GIT" ]]; then e vbs $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
-				mc) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
+				vs) case $2 in
+								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
+								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
+						esac;;
+				me) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
     esac
 }
@@ -1935,7 +2056,7 @@ done
 
 #}}}
 
-#### General Developement {{{
+#### General Developement {{{# {{{
 
 # General Navigation {{{
 
@@ -1944,7 +2065,7 @@ export MODE=SCD
 # Selecting the development mode
 mode() {
   menu "echo 'VUE\nMAP\nSCD'"
-  crc MODE $menu
+  mcv MODE $menu
 }
 
 # Go to projects directory, depending on the development mode
@@ -2000,17 +2121,19 @@ sci() {
 # Run SQL with credentials and database
 sql() {
   if [[ $1 = "" ]]; then
-    DB=""
-  else
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS
+  elif [[ $2 == "" ]]; then
     DB=${SQL_PREFIX}$1
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $DB
+  else
+    mysql -u$MSH_SQL_USER -p$MSH_SQL_PASS $@
   fi
-  mysql -uroot -proot $DB "${@:2}"
 }
 
 # Find table in databases
 sqlf() {
-  for database in $(mysql -uroot -proot -e "show databases" | s $SQL_PREFIX); do
-    if table=$(mysql -uroot -proot $database -e "show tables" | s $(pab $1)); then
+  for database in $(sqle "show databases" | s $SQL_PREFIX); do
+    if table=$(sql $database -e "show tables" | s $(pab $1)); then
       e $database
       e $table
       e
@@ -2021,26 +2144,26 @@ sqlf() {
 # SQL : SQL List Database
 # sqlld : List all databases under the SQL_PREFIX
 sqlld() {
-  mysql -uroot -proot -e "show databases" | s "^$SQL_PREFIX" | sed "s/^$SQL_PREFIX//"
+  sqle "show databases" | s "^$SQL_PREFIX" | sed "s/^$SQL_PREFIX//"
 }
 
 # Rename SQL database
 sqlmv() {
-  mysql -uroot -proot -e "create database ${SQL_PREFIX}$2"
-  for table in `mysql -uroot -proot -B -N -e "show tables" ${SQL_PREFIX}$1`; do 
-    mysql -uroot -proot -e "rename table ${SQL_PREFIX}$1.$table to ${SQL_PREFIX}$2.$table"
+  sqle "create database ${SQL_PREFIX}$2"
+  for table in `sql -B -N -e "show tables" ${SQL_PREFIX}$1`; do 
+    sqle "rename table ${SQL_PREFIX}$1.$table to ${SQL_PREFIX}$2.$table"
   done
-  mysql -uroot -proot -e "drop database ${SQL_PREFIX}$1"
+  sqle "drop database ${SQL_PREFIX}$1"
 }
 
 # Drop SQL database
 sqlrm() {
-  mysql -uroot -proot -e "drop database "${SQL_PREFIX}$1""
+  sqle "drop database "${SQL_PREFIX}$1""
 }
 
 # Create SQL database
 sqlmk() {
-  mysql -uroot -proot -e "create database "${SQL_PREFIX}$1""
+  sqle "create database "${SQL_PREFIX}$1""
 }
 
 # Import SQL script to database
@@ -2074,21 +2197,25 @@ sqlo() {
   fi
   for db in $(sqlld); do
     sqlfile=$SQL_PREFIX$db$SQL_SUFFIX.sql
-    mysqldump --skip-tz-utc -uroot -proot $SQL_PREFIX$db > $sqlfile
+    mysqldump --skip-tz-utc -u$MSH_SQL_USER -p$MSH_SQL_PASS $SQL_PREFIX$db > $sqlfile
   done
   wtt "sqlo [DONE]"
 }
 
 # Show SQL process list
 sqlp() {
-  mysql -uroot -proot -e "show processlist"
+  sqle "show processlist"
 }
 
 # Execute SQL in database
 sqle() {
-  table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
-  database=$(sqlf $table | pl 1 1)
-  eval "mysql -uroot -proot $database -e \"$@\""
+  if [[ $(echo $@) == *"database"* ]]; then
+    eval "sql -e \"$@\""
+  else
+    table=$(echo $@ | sed "s/^.*\(from\|desc\|update\) //" | cut -d " " -f1)
+    database=$(sqlf $table | pl 1 1)
+    eval "sql $database -e \"$@\""
+  fi
 }
 
 # SQL Utility : SQL Query
@@ -2128,7 +2255,7 @@ sqlt() {
 }
 sqlte() {
   database=$(sqlf $1)
-  mysql -uroot -proot $database -e "select * from $1 limit 1 \G;" | vi -
+  sql $database -e "select * from $1 limit 1 \G;" | vi -
 }
 
 # }}}
@@ -2171,7 +2298,7 @@ rv() {
 }
 
 # SVN Rollback
-# rb 1000 1004 : Roll back changes from revision 1000 to 1004
+# rb 1000 1004 : Roll back changes from revision 1000 to 1004 (Exclusive - Inclusive)
 rb() {
   if [[ $2 == "" ]]; then
     svn merge -c -$1 .
@@ -2183,8 +2310,8 @@ rb() {
 # SVN Merge Out Utility
 # mo : Merge out the changes from head branch to base
 rmo() {
-  crc MMB $MHD
-  crc JMB $JHD
+  mcv MMB $MHD
+  mcv JMB $JHD
   pj
   svn merge $PJ_ROOT/$MB
 }
@@ -2192,8 +2319,8 @@ rmo() {
 # SVN Merge In Utility
 # rmi : Merge in the changes from base to head branch
 rmi() {
-  crc MMB $MPJ
-  crc JMB $JPJ
+  mcv MMB $MPJ
+  mcv JMB $JPJ
   hd
   if [[ $1 = "" ]]; then
     svn merge --reintegrate $PJ_ROOT/$MB
@@ -2233,14 +2360,14 @@ tco() {
 }
 
 svncomment() {
-  svn propset svn:log --revprop -r $1 $2 $SVN
+  svnf propset svn:log --revprop -r $1 \"$2\" $SVN
 }
 
 svnlog() {
   if [[ $1 = "" ]]; then
-    svn log | head -5000 | head -30
+    svnf log | head -5000 | head -30
   else
-    svn log | head -5000 | s -C2 $1 | head -30
+    svnf log | head -5000 | s -C2 $1 | head -30
   fi
 }
 
@@ -2250,6 +2377,15 @@ svndi() {
 
 # Version Control : Branch
 vb() {
+  if [[ $1 == "" ]]; then
+    _vb
+  elif git rev-parse --verify $1; then
+    vbs $1
+  else
+    vbn $1
+  fi
+}
+_vb() {
 	case $(vt) in
 		GIT) pn vb "git branch --color -a $@";;
 		N/A) e current directory not under version control;;
@@ -2298,10 +2434,10 @@ vbs() {
 }
 
 # Version Control : Branch Merge
-# vbm : Merge from master
+# vbm : Merge from $MSH_MAIN_BRANCH
 vbm() {
 	case $(vt) in
-		GIT) if [[ $1 == "" ]]; then git merge master; else git merge $1; fi;;
+		GIT) if [[ $1 == "" ]]; then git merge $MSH_MAIN_BRANCH; else git merge $1; fi;;
 		SVN) svn merge -c $1 .;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
@@ -2310,15 +2446,15 @@ vbm() {
 }
 
 # Version Control : Branch Merge Diff Incoming Count
-# vbmdic : Show how many commits coming in when merging from master (behind master)
+# vbmdic : Show how many commits coming in when merging from $MSH_MAIN_BRANCH (behind $MSH_MAIN_BRANCH)
 vbmdic() {
-	git rev-list --left-right --count master... | cut -f1
+	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f1
 }
 
 # Version Control : Branch Merge Diff Outgoing Count
-# vbmdoc : Show how many commits going out when merging to master (ahead of master)
+# vbmdoc : Show how many commits going out when merging to $MSH_MAIN_BRANCH (ahead of $MSH_MAIN_BRANCH)
 vbmdoc() {
-	git rev-list --left-right --count master... | cut -f2
+	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f2
 }
 
 # Version Control : Branch Delete
@@ -2326,8 +2462,8 @@ vbd() {
 	case $(vt) in
 		GIT) 
 			if [[ $1 == $(vbc) ]]; then
-				# Trying to delete current branch, switch to master first
-				git checkout master
+				# Trying to delete current branch, switch to $MSH_MAIN_BRANCH first
+				git checkout $MSH_MAIN_BRANCH
 				git branch -d $@
 			else
 				git branch -d $@
@@ -2397,10 +2533,21 @@ vt() {
 # vs : Show status of repository
 vs() {
 	case $(vt) in
-		GIT) git status;;
-		SVN) pn st "svn status";;
+		GIT) pn vs "git status -s";;
+		SVN) pn vs "svn status";;
 		N/A) e current directory not under version control;;
 		*) e vs is not supported for your repository type;;
+	esac
+}
+
+# Version Control : Status Verbose
+# vs : Show status of repository
+vsb() {
+	case $(vt) in
+		GIT) git status;;
+		SVN) svn status;;
+		N/A) e current directory not under version control;;
+		*) e vsb is not supported for your repository type;;
 	esac
 }
 
@@ -2424,6 +2571,7 @@ vd() {
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
 	esac
+	vs
 }
 
 dt() {
@@ -2443,6 +2591,18 @@ cia() {
 
 todo() {
 	svn diff | s todo | ts "^.*TODO "
+}
+
+# Version Control : Reset
+# vr file : Discard changes on file
+vr() {
+	case $(vt) in
+		GIT) git checkout -- $1;;
+		SVN) svn revert $1;;
+		N/A) e current directory not under version control;;
+		*) e vr is not supported for your repository type;;
+	esac
+	vs
 }
 
 # Version Control : Commit
@@ -2467,7 +2627,7 @@ vc() {
 # vca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
 vca() {
 	case $(vt) in
-		GIT) git commit -a -m $1;;
+		GIT) git add . && git commit -a -m $1;;
 		SVN) e vca is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
@@ -2509,6 +2669,19 @@ vu() {
 	case $(vt) in
 		GIT) git pull;;
 		SVN) svn up;;
+		GITSVN) 
+			vbc=$(vbc)
+			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
+				vbs $MSH_MAIN_BRANCH
+			fi
+			svn up
+			git add .
+			vca "svn up"
+			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
+				vbs $vbc
+				vbm $MSH_MAIN_BRANCH
+			fi
+			;;
 		N/A) e current directory not under version control;;
 	esac
 }
@@ -2579,7 +2752,7 @@ note() {
 
 # }}}
 
-#}}}
+#}}}# }}}
 
 #### General Application {{{
 
@@ -2702,8 +2875,8 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 
 # TODO coreutils for BSD
 case $OS in
-	GNU) deps=(zsh urxvt tmux vim irssi elinks mutt-patched emacs git tree grc sshfs xclip ssh-copy-id);;
-	BSD) deps=(zsh tmux vim irssi emacs git tree grc node neo4j ssh-copy-id);;
+	GNU) deps=(zsh tmux vim git tree grc sshfs xclip ssh-copy-id);;
+	BSD) deps=(zsh tmux vim git tree grc ssh-copy-id);;
 esac
 for dep in $deps; do
 	wn $dep || pi $dep
@@ -2751,8 +2924,15 @@ esac
 
 d $MSH
 for plugin in $(ls); do
-	if [[ $plugin != msh-core ]]; then
-		. $plugin/*.msh
+	if [[ $plugin != msh-core && $plugin != msh-rc ]]; then
+    if [[ -a $plugin/$plugin.mshrc && ! -a msh-rc/$plugin.mshrc ]]; then
+      cp $plugin/$plugin.mshrc msh-rc
+      vi msh-rc/$plugin.mshrc
+    fi
+    if [[ -a msh-rc/$plugin.mshrc ]]; then
+      source msh-rc/$plugin.mshrc
+    fi
+		source $plugin/*.msh
 	fi
 done
 
