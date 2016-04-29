@@ -111,8 +111,8 @@ _stp() {
 
 # _stp_id : Show shell identifier in top prompt
 _stp_id() {
-	# TODO Because this is called from zle, vt is very slow - How to deal with this?
-	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH   $BLUE $MODE | $PJ$FINISH   $GREEN $SV$FINISH"
+	# TODO Because this (hostname) is called from zle, vt is very slow - How to deal with this?
+	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH"
 }
 
 # _stp_command : Show command input and intepretation in top prompt
@@ -2056,17 +2056,9 @@ done
 
 #}}}
 
-#### General Developement {{{# {{{
+#### General Developement {{{
 
 # General Navigation {{{
-
-export MODE=SCD
-
-# Selecting the development mode
-mode() {
-  menu "echo 'VUE\nMAP\nSCD'"
-  mcv MODE $menu
-}
 
 # Go to projects directory, depending on the development mode
 pj() {
@@ -2952,3 +2944,4 @@ NEW=false
 # }}}
 
 #}}}
+
