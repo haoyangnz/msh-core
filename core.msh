@@ -937,13 +937,43 @@ p() {
 
 # }}}
 
-# System functions {{{
+# Shell {{{
 
 # Shell : Test
 # st "[[ -a src ]]" : Test if src exists, and print the result
 st() {
   eval $1 && e \"$1\" is true || e \"$1\" is false
 }
+
+# Shell Variable : Back Up
+# svbu MSH : Back up the value of the shell variable $MSH to $MSH_BU
+svbu() {
+  eve export $1_BU=\$$1
+}
+
+# Shell Variable : Back Up Remove
+# svbur MSH : Back up the value of the shell variable $MSH to $MSH_BU, and unset $MSH
+svbur() {
+  eve export $1_BU=\$$1
+  unset $1
+}
+
+# Shell Variable : Put Back
+# svpb MSH : Put back the value of the shell variable $MSH from $MSH_BU
+svpb() {
+  eve export $1=\$$1_BU
+}
+
+# Shell Variable : Put Back Remove
+# svpbr MSH : Put back the value of the shell variable $MSH from $MSH_BU, and unset $MSH_BU
+svpbr() {
+  eve export $1=\$$1_BU
+  unset $1_BU
+}
+
+# }}}
+
+# System functions {{{
 
 # Clear Screen
 cs() {
