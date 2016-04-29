@@ -1527,9 +1527,9 @@ f() {
 		fdir=$2
 	fi
   if $MSH_AUTO_EXCLUDE; then
-    pn f "find $2 -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
+    pn f "find $fdir -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
   else
-    pn f "find $2 -regex '.*/$1' ${@:3}"
+    pn f "find $fdir -regex '.*/$1' ${@:3}"
   fi
 }
 
@@ -1884,7 +1884,7 @@ tn() {
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbc $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbt $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
@@ -2276,8 +2276,8 @@ vbn() {
 	vb
 }
 
-# Version Control : Branch Checkout
-vbc() {
+# Version Control : Branch Track
+vbt() {
 	case $(vt) in
 		GIT) git checkout -b $1 origin/$1;;
 		N/A) e current directory not under version control;;
