@@ -673,7 +673,8 @@ ml() {
 }
 
 # TODO seem to erase MAP_REV_SOURCE to MAP_REV
-# Change variable in Zsh source
+# crc JPJ inv2 kiwiplan :  Change variable JPJ to inv2 in the kiwiplan module
+# crc PAGER_SIZE 200 : Change variable PAGER_SIZE to 200 in the core module
 crc() {
 	if [[ $3 == "" ]]; then
     rc_file=$MSH/msh-core/core.msh
