@@ -676,9 +676,9 @@ ml() {
 # Change variable in Zsh source
 crc() {
 	if [[ $3 == "" ]]; then
-		rc_file=$ZSHRC
+    rc_file=$MSH/msh-core/core.msh
 	else
-		rc_file=$MSH/msh-$3/$3.msh
+    rc_file=$MSH/msh-rc/msh-$3.mshrc
 	fi
 	rep=$(echo $2 | esr)
 	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
