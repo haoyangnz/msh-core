@@ -571,7 +571,7 @@ mu() {
       continue
     fi
     cd $MSH/$package
-    e "${YELLOW}Upgrading $package..${FINISH}"
+    e "${GREEN}Upgrading $package..${FINISH}"
     if ! evn git remote show upstream; then
       e "${RED}There's no upstream configured to upgrade from."
       e "Please enter a github owner to use their $package as the upstream to upgrade from, or press enter to skip the upgrade for this module:${FINISH}"
@@ -589,7 +589,10 @@ mu() {
     e "${GREEN}Upgraded $package.${FINISH}"
     e
 	done
-  e "${GREEN}All upgrades complete.${FINISH}"
+  e "${GREEN}All upgrades complete. Press enter to reload the upgraded packages. ${FINISH}"
+	read
+  e "${GREEN}Reloading the upgraded packages..${FINISH}"
+	mr
 }
 
 # MSH : Build
