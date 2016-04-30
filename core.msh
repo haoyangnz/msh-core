@@ -552,7 +552,8 @@ mcv() {
 	fi
   rc_file=$MSH/msh-rc/msh-$module.mshrc
 	rep=$(echo $2 | esr)
-	sed -i -r 's/^export '$1'=.*$/export '$1'='$rep'/gi' $rc_file
+	sed -i.sedbak 's/^export '$1'=.*$/export '$1'='$rep'/g' $rc_file
+	r $rc_file.sedbak
 	mr
 }
 
@@ -2918,19 +2919,35 @@ esac
 
 # }}}
 
-# Load Plugins {{{
+# Load Msh Packages {{{
 
 d $MSH
-for plugin in $(ls); do
-	if [[ $plugin != msh-core && $plugin != msh-rc ]]; then
-    if [[ -a $plugin/$plugin.mshrc && ! -a msh-rc/$plugin.mshrc ]]; then
-      cp $plugin/$plugin.mshrc msh-rc
-      vi msh-rc/$plugin.mshrc
+for package in $(ls); do
+	if [[ $package != msh-core && $package != msh-rc ]]; then
+    if [[ -a $package/$package.mshrc ]]; then
+			if [[ ! -a msh-rc/$package.mshrc ]]; then
+				cp $package/$package.mshrc msh-rc
+				vi msh-rc/$package.mshrc
+			elif [[ $(diff <(cat $package/$package.mshrc | ts =.*) <(cat msh-rc/$package.mshrc | ts =.*) | wc -l) -gt 0 ]]; then
+				bur msh-rc/$package.mshrc
+				cp $package/$package.mshrc msh-rc
+				for var in $(cat msh-rc/$package.mshrc | s export | cut -d' ' -f2 | cut -d= -f1); do
+					# XXX Why does evn require the quotes here?
+					if evn 's export\ ${var}= msh-rc/$package.mshrc.bak'; then
+						sed -i.sedbak 's/^export '$var'=.*$/export '$var'='$(s export\ ${var}= msh-rc/$package.mshrc.bak | cut -d= -f2 | esr)'/g' msh-rc/$package.mshrc
+						r msh-rc/$package.mshrc.sedbak
+					fi
+				done
+				r msh-rc/$package.mshrc.bak
+				if evn s TODO msh-rc/$package.mshrc
+					vi msh-rc/$package.mshrc
+				if 
+			fi
     fi
-    if [[ -a msh-rc/$plugin.mshrc ]]; then
-      source msh-rc/$plugin.mshrc
+    if [[ -a msh-rc/$package.mshrc ]]; then
+      source msh-rc/$package.mshrc
     fi
-		source $plugin/*.msh
+		source $package/*.msh
 	fi
 done
 
