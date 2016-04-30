@@ -1,6 +1,9 @@
 #### TODO {{{
+# Adjust pager line and line dividers based on screen size
+# Separate personal MSH settings to dotfile
 # Renaming of methods checks plugins		
 # Fix mtp		
+# More proactive msh-guess
 # Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp		
 # Split file		
 # General de-numbering		
@@ -108,7 +111,8 @@ _stp() {
 
 # _stp_id : Show shell identifier in top prompt
 _stp_id() {
-  e " ${BRCYAN}MSH $$ @ $(hostname)${FINISH}"
+	# TODO Because this (hostname) is called from zle, vt is very slow - How to deal with this?
+	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH"
 }
 
 # _stp_command : Show command input and intepretation in top prompt
@@ -745,6 +749,7 @@ alias beep='paplay $BEEP'
 
 alias bc='bc -l'
 alias emacs='emacs -nw'
+alias vi='vim'
 
 case $OS in
   GNU) alias lscolor='ls --color'
@@ -1643,9 +1648,9 @@ f() {
 		fdir=$2
 	fi
   if $MSH_AUTO_EXCLUDE; then
-    pn f "find $2 -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
+    pn f "find $fdir -regex '.*/$1' $MSH_AUTO_EXCLUDE_FLIST ${@:3}"
   else
-    pn f "find $2 -regex '.*/$1' ${@:3}"
+    pn f "find $fdir -regex '.*/$1' ${@:3}"
   fi
 }
 
@@ -1999,7 +2004,7 @@ tn() {
         clog) e o $n;;
         jdb) e "sed -i '/debugport/d' $n; sed -i '/rmidport/a debugport=\"13066\"' $n";;
 				vb) case $2 in 
-								"") if [[ $n == *remotes*origin* ]]; then e vbch $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
+								"") if [[ $n == *remotes*origin* ]]; then e vbt $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								r) e vbd $(e $n | sed 's/\*//g');;
 						esac;;
@@ -2055,17 +2060,9 @@ done
 
 #}}}
 
-#### General Developement {{{# {{{
+#### General Developement {{{
 
 # General Navigation {{{
-
-export MODE=VUE
-
-# Selecting the development mode
-mode() {
-  menu "echo 'VUE\nMAP\nSCD'"
-  mcv MODE $menu
-}
 
 # Go to projects directory, depending on the development mode
 pj() {
@@ -2411,8 +2408,8 @@ vbn() {
 	vb
 }
 
-# Version Control : Branch Checkout
-vbch() {
+# Version Control : Branch Track
+vbt() {
 	case $(vt) in
 		GIT) git checkout -b $1 origin/$1;;
 		N/A) e current directory not under version control;;
@@ -2565,7 +2562,7 @@ vsm() {
 # vd : Show repository diff
 vd() {
 	case $(vt) in
-		GIT) git diff $@;;
+		GIT) git diff -w $@;;
 		SVN) svn diff $@;;
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
@@ -2736,7 +2733,7 @@ work() {
 # Sandbox: Sandbox
 # sb : Go to the Sandbox directory
 sb() {
-  o $SANDBOX
+  d $SANDBOX
 }
 
 # Edit note
@@ -2967,3 +2964,4 @@ NEW=false
 # }}}
 
 #}}}
+
