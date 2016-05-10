@@ -2637,7 +2637,7 @@ vp() {
 # vcp "Minor change" : Commit changes with comment "Minor change" and then publish all outstanding commits
 vcp() {
 	case $(vt) in
-		GIT) rc $1 && vp;;
+		GIT) vc $1 && vp;;
 		SVN) e vcp is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
