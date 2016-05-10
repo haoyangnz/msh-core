@@ -503,6 +503,12 @@ source msh-core.mshrc
 
 # }}}
 
+# MSH : Modules
+# mm : Open msh modules
+mm() {
+  o $MSH
+}
+
 # TODO Could be started by loading a bootstrapping msh which also indexes available msh modules
 # MSH : Reload
 # mr : Reload MSH
