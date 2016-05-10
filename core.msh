@@ -4,7 +4,7 @@
 # Renaming of methods checks plugins		
 # Fix mtp		
 # More proactive msh-guess
-# Dynamic Command Composition - Creating vw from v and w, vcap from vca and vcp		
+# Dynamic Command Composition - Creating ow from o and w, vcap from vca and vcp		
 # Split file		
 # General de-numbering		
 # Globally fix pglc		
@@ -1171,12 +1171,6 @@ _pbr() {
   done
 }
 
-# TODO
-# Directory history
-#d() {
-#  pn d "dirs -v | head -10"
-#}
-
 # Tree
 t() {
   if $MSH_AUTO_EXCLUDE; then
@@ -1819,9 +1813,11 @@ o() {
         fi
       done
       if [[ $2 = "" ]]; then
-        v $1
+        vi $1
+        pg
       else
-        v $1 $2
+        vi +$2 $1
+        pg
       fi
     fi
   fi
@@ -1876,44 +1872,29 @@ hc() {
   : > $MSH_HISTOPENFILE
 }
 
-#}}}
-
-# Vi {{{
-
-# Vi
-v() {
-  if [[ $2 = "" ]]; then
-    vi $1
-    pg
-  else
-    vi +$2 $1
-    pg
-  fi
-}
-
 # Find by full name and open with Vi
-vf() {
+of() {
   f $1
   rn 1
 }
 
 # Find source by partial name and open with Vi
-vps() {
+ops() {
   vi $(fps $1 | unl)
 }
 
 # Find source by full PascalCase abbreviated name and open with Vi
-va() {
+oa() {
   vi $(fa $1 | awk '{print $2}')
 }
 
 # Find source by partial PascalCase abbreviated name and open with Vi
-vpa() {
+opa() {
   vi $(fpa $1 | awk '{print $2}')
 }
 
 # Find executable in PATH and open with Vi
-vw() {
+ow() {
   vi $(w $1)
 }
 
