@@ -170,8 +170,9 @@ wtt() {
 
 # (Internal) MSH : Assist
 msh-assist() {
+  vbcp=$(vbcp)
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $MSH_MAIN_BRANCH ${FINISH}; fi)$(if [[ $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $MSH_MAIN_BRANCH ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $vbcp == "" ]]; then e ${GREEN}branch is root${FINISH}; fi)$(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $vbcp ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $vbcp ${FINISH}; fi)$(if [[ $vbmc != "" && $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $vbcp ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
@@ -2418,10 +2419,10 @@ vbs() {
 }
 
 # Version Control : Branch Merge
-# vbm : Merge from $MSH_MAIN_BRANCH
+# vbm : Merge from the parent branch
 vbm() {
 	case $(vt) in
-		GIT) if [[ $1 == "" ]]; then git merge $MSH_MAIN_BRANCH; else git merge $1; fi;;
+		GIT) if [[ $1 == "" ]]; then git merge $(vbcp); else git merge $1; fi;;
 		SVN) svn merge -c $1 .;;
 		N/A) e current directory not under version control;;
 		*) e vb is not supported for your repository type;;
@@ -2430,15 +2431,15 @@ vbm() {
 }
 
 # Version Control : Branch Merge Diff Incoming Count
-# vbmdic : Show how many commits coming in when merging from $MSH_MAIN_BRANCH (behind $MSH_MAIN_BRANCH)
+# vbmdic : Show how many commits coming in when merging from the parent branch (behind the parent branch)
 vbmdic() {
-	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f1
+	git rev-list --left-right --count $(vbcp)... | cut -f1
 }
 
 # Version Control : Branch Merge Diff Outgoing Count
-# vbmdoc : Show how many commits going out when merging to $MSH_MAIN_BRANCH (ahead of $MSH_MAIN_BRANCH)
+# vbmdoc : Show how many commits going out when merging to the parent branch (ahead of the parent branch)
 vbmdoc() {
-	git rev-list --left-right --count $MSH_MAIN_BRANCH... | cut -f2
+	git rev-list --left-right --count $(vbcp)... | cut -f2
 }
 
 # Version Control : Branch Delete
@@ -2446,8 +2447,8 @@ vbd() {
 	case $(vt) in
 		GIT) 
 			if [[ $1 == $(vbc) ]]; then
-				# Trying to delete current branch, switch to $MSH_MAIN_BRANCH first
-				git checkout $MSH_MAIN_BRANCH
+				# Trying to delete current branch, switch to the parent branch first
+				git checkout $(vbcp)
 				git branch -d $@
 			else
 				git branch -d $@
@@ -2463,7 +2464,17 @@ vbd() {
 # vbc : Get current branch name
 vbc() {
 	case $(vt) in
-		GIT) git branch | grep ^\* | cut -d" " -f2;;
+		GIT) git rev-parse --abbrev-ref HEAD;;
+		N/A) e current directory not under version control;;
+		*) e vbc is not supported for your repository type;;
+	esac
+}
+
+# Version Control : Branch Current Parent
+# vbcp : Get the parent branch name of the current branch
+vbcp() {
+	case $(vt) in
+		GIT) git show-branch | grep '^[^\[]*\*' | grep -v "^[^\[]*\[$(vbc)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//';;
 		N/A) e current directory not under version control;;
 		*) e vbc is not supported for your repository type;;
 	esac
@@ -2667,15 +2678,16 @@ vu() {
 		SVN) svn up;;
 		GITSVN) 
 			vbc=$(vbc)
-			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
-				vbs $MSH_MAIN_BRANCH
+      vbcp=$(vbcp)
+			if [[ $vbc != $vbcp ]]; then
+				vbs $vbcp
 			fi
 			svn up
 			git add .
 			vca "svn up"
-			if [[ $vbc != $MSH_MAIN_BRANCH ]]; then
+			if [[ $vbc != $vbcp ]]; then
 				vbs $vbc
-				vbm $MSH_MAIN_BRANCH
+				vbm $vbcp
 			fi
 			;;
 		N/A) e current directory not under version control;;
