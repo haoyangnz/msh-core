@@ -2544,7 +2544,7 @@ vsm() {
 # vd : Show repository diff
 vd() {
 	case $(vt) in
-		GIT) git diff -w $@;;
+		GIT) git diff --color=always -w $@ | less -r;;
 		SVN) svn diff $@;;
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
