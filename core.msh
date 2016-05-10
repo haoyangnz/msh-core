@@ -1996,6 +1996,7 @@ tn() {
 				vs) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
 								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
+								"a") if [[ $(vt) == "GIT" ]]; then e va $(e $n | cut -d " " -f3); fi;;
 						esac;;
 				me) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
@@ -2568,6 +2569,18 @@ cia() {
 
 todo() {
 	svn diff | s todo | ts "^.*TODO "
+}
+
+# Version Control : Add
+# va file : Add file to version control
+va() {
+	case $(vt) in
+		GIT) git add $1;;
+		SVN) svn add $1;;
+		N/A) e current directory not under version control;;
+		*) e va is not supported for your repository type;;
+	esac
+	vs
 }
 
 # Version Control : Reset
