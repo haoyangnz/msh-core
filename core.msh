@@ -172,7 +172,7 @@ wtt() {
 msh-assist() {
   vbcp=$(vbcp)
 	case $(vt) in
-		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsb | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsb | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $vbcp == "" ]]; then e ${GREEN}branch is root${FINISH}; fi)$(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $vbcp ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $vbcp ${FINISH}; fi)$(if [[ $vbmc != "" && $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $vbcp ${FINISH}; fi)";;
+		GIT) MSH_ASSIST="We're in a git repository.${FINISH} Branch $(if vsv | s clean &> /dev/null; then e ${GREEN}$(vbc) (clean)${FINISH}; elif vsv | s untracked &> /dev/null; then e ${RED}$(vbc) (untrakced)${FINISH}; else e ${RED}$(vbc) (dirty)${FINISH}; fi) $(if [[ $vbcp == "" ]]; then e ${GREEN}branch is root${FINISH}; fi)$(if [[ $(vbmdic) != 0 ]]; then e ${RED}$(vbmdic) behind $vbcp ${FINISH}; fi)$(if [[ $(vbmdoc) != 0 ]]; then e ${YELLOW}$(vbmdoc) ahead of $vbcp ${FINISH}; fi)$(if [[ $vbmc != "" && $(vbmdoc) == 0 && $(vbmdic) == 0 ]]; then e ${GREEN}identical to $vbcp ${FINISH}; fi)";;
 		SVN) MSH_ASSIST="We're in a svn repository.";;
 		N/A) MSH_ASSIST="We're not under version control.";;
 	esac
@@ -2360,6 +2360,8 @@ svndi() {
   svn di -c $1 *
 }
 
+# Version Control : Branch {{{
+
 # Version Control : Branch
 vb() {
   if [[ $1 == "" ]]; then
@@ -2480,6 +2482,10 @@ vbcp() {
 	esac
 }
 
+# }}}
+
+# Version Control : History {{{
+
 # Version Control : History Simple
 vhs() {
 	case $(vt) in
@@ -2509,6 +2515,8 @@ vhd() {
 	vh
 }
 
+# }}}
+
 # Version Control : Type
 # vt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
 vt() {
@@ -2524,6 +2532,8 @@ vt() {
 
 }
 
+# Version Control : Status {{{
+
 # Version Control : Status
 # vs : Show status of repository
 vs() {
@@ -2536,13 +2546,13 @@ vs() {
 }
 
 # Version Control : Status Verbose
-# vs : Show status of repository
-vsb() {
+# vsv : Show status of repository with verbose explanation
+vsv() {
 	case $(vt) in
 		GIT) git status;;
 		SVN) svn status;;
 		N/A) e current directory not under version control;;
-		*) e vsb is not supported for your repository type;;
+		*) e vsv is not supported for your repository type;;
 	esac
 }
 
@@ -2556,6 +2566,74 @@ vsm() {
 		*) e vsm is not supported for your repository type;;
 	esac
 }
+
+# }}}
+
+# Version Control : WIP (Stash) {{{
+
+# Version Control : WIP (Stash) List
+# vwl : Show WIP list
+vwl() {
+	case $(vt) in
+		GIT) pn vwl "git stash list";;
+		N/A) e current directory not under version control;;
+		*) e vwl is not supported for your repository type;;
+	esac
+}
+
+# Version Control : WIP (Stash) Save
+# vws : Save dirty changes as a new WIP using interactive hunk selection with generated message
+# vws "Change" : Save dirty changes as a new WIP using interactive hunk selection with message "Change"
+vws() {
+	case $(vt) in
+		GIT) git stash save -p $1;;
+		N/A) e current directory not under version control;;
+		*) e vws is not supported for your repository type;;
+	esac
+}
+
+# Version Control : WIP (Stash) Save All
+# vwsa : Save all current dirty changes as a new WIP with generated message
+# vwsa "Change" : Save all current dirty changes as a new WIP with message "Change"
+vwsa() {
+	case $(vt) in
+		GIT) git stash save $1;;
+		N/A) e current directory not under version control;;
+		*) e vwsa is not supported for your repository type;;
+	esac
+}
+
+# Version Control : WIP (Stash) Apply
+# vwa stash@{1} : Apply WIP stash@{1}
+vwa() {
+	case $(vt) in
+		GIT) git stash apply $1;;
+		N/A) e current directory not under version control;;
+		*) e vwa is not supported for your repository type;;
+	esac
+}
+
+# Version Control : WIP (Stash) Un-apply
+# vwu stash@{1} : Un-apply WIP stash@{1}
+vwu() {
+	case $(vt) in
+		GIT) git stash show -p $1 | git apply -R;;
+		N/A) e current directory not under version control;;
+		*) e vwu is not supported for your repository type;;
+	esac
+}
+
+# Version Control : WIP (Stash) Delete
+# vwd stash@{1} : Delete WIP stash@{1}
+vwd() {
+	case $(vt) in
+		GIT) git stash drop $1;;
+		N/A) e current directory not under version control;;
+		*) e vwd is not supported for your repository type;;
+	esac
+}
+
+# }}}
 
 # Version Control : Diff
 # vd : Show repository diff
@@ -2589,10 +2667,11 @@ todo() {
 }
 
 # Version Control : Add
+# va : Add file by using interactive hunk selection
 # va file : Add file to version control
 va() {
 	case $(vt) in
-		GIT) git add $1;;
+		GIT) if [[ $1 == "" ]]; then git add -p; else git add $1; fi;;
 		SVN) svn add $1;;
 		N/A) e current directory not under version control;;
 		*) e va is not supported for your repository type;;
