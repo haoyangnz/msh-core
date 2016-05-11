@@ -1994,7 +1994,7 @@ tn() {
 				vb) case $2 in 
 								"") if [[ $n == *remotes*origin* ]]; then e vbt $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
-								r) e vbd $(e $n | sed 's/\*//g');;
+								df) e vbdf $(e $n | sed 's/\*//g');;
 						esac;;
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
@@ -2445,6 +2445,7 @@ vbmdoc() {
 }
 
 # Version Control : Branch Delete
+# vbd feature : Delete branch "feature"
 vbd() {
 	case $(vt) in
 		GIT) 
@@ -2461,6 +2462,26 @@ vbd() {
 	esac
 	vb
 }
+
+# Version Control : Branch Delete Force
+# vbdf feature : Delete branch "feature" by force even if the branch hasn't been merged
+vbdf() {
+	case $(vt) in
+		GIT) 
+			if [[ $1 == $(vbc) ]]; then
+				# Trying to delete current branch, switch to the parent branch first
+				git checkout $(vbcp)
+				git branch -D $@
+			else
+				git branch -D $@
+			fi
+			;;
+		N/A) e current directory not under version control;;
+		*) e vbdf is not supported for your repository type;;
+	esac
+	vb
+}
+
 
 # Version Control : Branch Current
 # vbc : Get current branch name
