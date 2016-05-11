@@ -2476,7 +2476,11 @@ vbc() {
 # vbcp : Get the parent branch name of the current branch
 vbcp() {
 	case $(vt) in
-		GIT) git show-branch | grep '^[^\[]*\*' | grep -v "^[^\[]*\[$(vbc)" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//';;
+		GIT) 
+			vbc_col=$(( $(git show-branch | grep '^[^\[]*\*' | head -1 | cut -d* -f1 | wc -c) - 1 ))
+			swimming_lane_start_row=$(( $(git show-branch | grep -n "^[\-]*$" | cut -d: -f1) + 1 ))
+			git show-branch | tail -n +$swimming_lane_start_row | grep -v "^[^\[]*\[$(vbc)" | grep "^.\{$vbc_col\}[^ ]" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
+			;;
 		N/A) e current directory not under version control;;
 		*) e vbc is not supported for your repository type;;
 	esac
