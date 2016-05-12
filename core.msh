@@ -2005,6 +2005,12 @@ tn() {
 								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
 								"a") if [[ $(vt) == "GIT" ]]; then e va $(e $n | cut -d " " -f3); fi;;
 						esac;;
+        vw) case $2 in
+								"") if [[ $(vt) == "GIT" ]]; then e vwv $(e $n | cut -d: -f1); fi;;
+								"a") if [[ $(vt) == "GIT" ]]; then e vwa $(e $n | cut -d: -f1); fi;;
+								"u") if [[ $(vt) == "GIT" ]]; then e vwu $(e $n | cut -d: -f1); fi;;
+								"d") if [[ $(vt) == "GIT" ]]; then e vwd $(e $n | cut -d: -f1); fi;;
+						esac;;
 				me) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
     esac
@@ -2598,13 +2604,13 @@ vsm() {
 
 # Version Control : WIP (Stash) {{{
 
-# Version Control : WIP (Stash) List
-# vwl : Show WIP list
-vwl() {
+# Version Control : WIP (Stash)
+# vw : Show WIP list
+vw() {
 	case $(vt) in
-		GIT) pn vwl "git stash list";;
+		GIT) pn vw "git stash list";;
 		N/A) e current directory not under version control;;
-		*) e vwl is not supported for your repository type;;
+		*) e vw is not supported for your repository type;;
 	esac
 }
 
@@ -2617,6 +2623,7 @@ vws() {
 		N/A) e current directory not under version control;;
 		*) e vws is not supported for your repository type;;
 	esac
+  vw
 }
 
 # Version Control : WIP (Stash) Save All
@@ -2628,6 +2635,18 @@ vwsa() {
 		N/A) e current directory not under version control;;
 		*) e vwsa is not supported for your repository type;;
 	esac
+  vw
+}
+
+# Version Control : WIP (Stash) View
+# vwv stash@{1} : View the content of a WIP stash@{1}
+vwv() {
+	case $(vt) in
+		GIT) git stash show -p $1;;
+		N/A) e current directory not under version control;;
+		*) e vwa is not supported for your repository type;;
+	esac
+  vw
 }
 
 # Version Control : WIP (Stash) Apply
@@ -2658,6 +2677,7 @@ vwd() {
 		N/A) e current directory not under version control;;
 		*) e vwd is not supported for your repository type;;
 	esac
+  vw
 }
 
 # }}}
