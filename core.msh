@@ -2649,7 +2649,19 @@ vwv() {
   vw
 }
 
+# Version Control : WIP (Stash) Pop
+# vwp : Pop (apply and then delete) most recent WIP
+# vwp stash@{1} : Pop (apply and then delete) WIP stash@{1}
+vwp() {
+	case $(vt) in
+		GIT) git stash pop $1;;
+		N/A) e current directory not under version control;;
+		*) e vwp is not supported for your repository type;;
+	esac
+}
+
 # Version Control : WIP (Stash) Apply
+# vwa : Apply most recent WIP
 # vwa stash@{1} : Apply WIP stash@{1}
 vwa() {
 	case $(vt) in
