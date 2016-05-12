@@ -2505,7 +2505,7 @@ vbcp() {
 	case $(vt) in
 		GIT) 
 			vbc_col=$(( $(git show-branch | grep '^[^\[]*\*' | head -1 | cut -d* -f1 | wc -c) - 1 ))
-      if [[ $vbc_col -gt 0 ]]; then
+      if [[ $vbc_col -ge 0 ]]; then
         swimming_lane_start_row=$(( $(git show-branch | grep -n "^[\-]*$" | cut -d: -f1) + 1 ))
         git show-branch | tail -n +$swimming_lane_start_row | grep -v "^[^\[]*\[$(vbc)" | grep "^.\{$vbc_col\}[^ ]" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'
       fi
@@ -2730,7 +2730,7 @@ va() {
 # vr file : Discard changes on file
 vr() {
 	case $(vt) in
-		GIT) git checkout -- $1;;
+		GIT) if [[ $1 == "" ]]; then git reset --hard; else git checkout -- $1; fi;;
 		SVN) svn revert $1;;
 		N/A) e current directory not under version control;;
 		*) e vr is not supported for your repository type;;
