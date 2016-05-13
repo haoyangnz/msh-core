@@ -895,6 +895,12 @@ ts() {
 	sed "s/$1/$2/g"
 }
 
+# Text : Until
+# tu apple : Remove everything after apple
+tu() {
+	sed "/$1/q"
+}
+
 # }}}
 
 # Pager {{{
