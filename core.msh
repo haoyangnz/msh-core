@@ -323,7 +323,15 @@ msh-enter() {
     BUFFER=$LAST_BUFFER
 # Run command if valid
     if which $(lnode $BUFFER " " 1) &> /dev/null; then
-      e $BUFFER >> $MSH_HISTCMD
+			e $BUFFER >> $MSH_HISTCMD
+# Inject pipes into pn the command involves pn
+# FIXME Slight issue where indirect pn usage are not discovered such as `l` using `la` or `lb` indirectly
+			if which $(lnode $BUFFER " " 1) | grep pn &> /dev/null && [[ $BUFFER == *"|"* ]] &> /dev/null; then
+				PN_PIPE="|"$(e $BUFFER | cut -d"|" -f2-)
+				BUFFER=$(e $BUFFER | cut -d"|" -f1)
+			else
+				unset PN_PIPE
+			fi
 # Open immediate file with partial match
 		elif [[ "$(echo *${BUFFER}*)" != "*${BUFFER}*" ]]; then
 			BUFFER="o *${BUFFER}*"
@@ -1024,7 +1032,7 @@ decolor() {
 # Evaluate : Evaluate to Buffer
 # evb : evaluate
 evb() {
-  eval $@ &> $MOS_TMP/stdbuf/$$
+  eval "$@" &> $MOS_TMP/stdbuf/$$
   decolor $MOS_TMP/stdbuf/$$ > $MOS_TMP/stdbuf/$$.nocolor
 }
 
@@ -1953,7 +1961,7 @@ sn() {
 
 pn() {
   echo $1 > $MOS_TMP/stdbuf/$$.cmd
-  evb ${@:2}
+  evb ${@:2} $PN_PIPE
   pg
 }
 
