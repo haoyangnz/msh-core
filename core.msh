@@ -2001,9 +2001,10 @@ tn() {
 								s) if [[ $(vt) == "GIT" ]]; then e vbs $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
 				vs) case $2 in
-								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -d " " -f3); fi;;
-								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -d " " -f3); fi;;
-								"a") if [[ $(vt) == "GIT" ]]; then e va $(e $n | cut -d " " -f3); fi;;
+								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -c4-); fi;;
+								"o") if [[ $(vt) == "GIT" ]]; then e o $(e $n | cut -c4-); fi;;
+								"r") if [[ $(vt) == "GIT" ]]; then e vr $(e $n | cut -c4-); fi;;
+								"a") if [[ $(vt) == "GIT" ]]; then e va $(e $n | cut -c4-); fi;;
 						esac;;
         vw) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vwv $(e $n | cut -d: -f1); fi;;
