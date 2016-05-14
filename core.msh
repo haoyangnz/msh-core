@@ -1402,18 +1402,18 @@ export DIRCOLORSRC=$RC/.dir_colors
 #dl $DIRCOLORSRC ~
 
 # Configure Vi
-vrc() {
+rcv() {
   o $VIMRC
 }
 
 # Configure Tmux
-trc() {
+rct() {
   vi $TMUXRC
   tmux source-file $TMUXRC
 }
 
 # Configure Mutt
-mrc() {
+rcm() {
   vi $MUTTRC
 }
 
@@ -2503,7 +2503,6 @@ vbdf() {
 	vb
 }
 
-
 # Version Control : Branch Current
 # vbc : Get current branch name
 vbc() {
@@ -2561,6 +2560,20 @@ vhd() {
 		*) e vhd is not supported for your repository type;;
 	esac
 	vh
+}
+
+# }}}
+
+# Version Control : Revision {{{
+
+# Version Control : Revision Current
+# vrc : Get current rev id
+vrc() {
+	case $(vt) in
+		GIT) git rev-parse HEAD;;
+		N/A) e current directory not under version control;;
+		*) e vrc is not supported for your repository type;;
+	esac
 }
 
 # }}}
