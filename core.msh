@@ -2570,7 +2570,7 @@ vhd() {
 # vrc : Get current rev id
 vrc() {
 	case $(vt) in
-		GIT) git rev-parse HEAD;;
+		GIT) git rev-parse HEAD | cut -c-7;;
 		N/A) e current directory not under version control;;
 		*) e vrc is not supported for your repository type;;
 	esac
