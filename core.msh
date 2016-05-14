@@ -903,10 +903,16 @@ ts() {
 	sed "s/$1/$2/g"
 }
 
-# Text : Until
-# tu apple : Remove everything after apple
-tu() {
+# Text : Until Inclusive
+# tui apple : Remove everything after the first occurrence of "apple"
+tui() {
 	sed "/$1/q"
+}
+
+# Text : Until Exclusive
+# tue apple : Remove everything from the first occurrence of "apple"
+tue() {
+	sed "/$1/,$ d"
 }
 
 # }}}
