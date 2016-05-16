@@ -112,7 +112,11 @@ _stp() {
 # _stp_id : Show shell identifier in top prompt
 _stp_id() {
 	# TODO Because this (hostname) is called from zle, vt is very slow - How to deal with this?
-	e " ${BRCYAN}MSH $$ @ $(hostname)$FINISH"
+  stp_disk_color=$BRCYAN
+  if [[ $(dfr | cut -dG -f1) -le 10 ]]; then
+    stp_disk_color=$RED
+  fi
+	e " ${BRCYAN}MSH $$ @ $(hostname) |$FINISH$stp_disk_color Free disk: $(dfr)$FINISH"
 }
 
 # _stp_command : Show command input and intepretation in top prompt
@@ -1807,6 +1811,11 @@ df() {
 }
 
 
+# Disk : Free Root
+# dfr : Show free disk space for the device mounted on root (/)
+dfr() {
+  df | s /$ | cut -d" " -f7
+}
 
 # }}}
 
