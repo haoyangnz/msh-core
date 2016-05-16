@@ -2677,6 +2677,16 @@ vsc() {
 	esac
 }
 
+# Version Control : Status Untracked Remove
+# vsur : Remove all untracked files
+vsur() {
+	case $(vt) in
+		GIT) git status -s | s ^?? | cut -d" " -f2 | xargs rm -rf;;
+		N/A) e current directory not under version control;;
+		*) e vsur is not supported for your repository type;;
+	esac
+}
+
 # }}}
 
 # Version Control : WIP (Stash) {{{
