@@ -1814,7 +1814,7 @@ df() {
 # Disk : Free Root
 # dfr : Show free disk space for the device mounted on root (/)
 dfr() {
-  df | s /$ | cut -d" " -f7
+  df | s /$ | ac 4
 }
 
 # }}}
