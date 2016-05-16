@@ -1360,7 +1360,7 @@ rl() {
 # Remove Utility: Remove Empty
 # re : Empty files in trash
 re() {
-  rm -rf $TRASH/*
+  command rm -rf $TRASH/*
 }
 
 # Remove : Archive
