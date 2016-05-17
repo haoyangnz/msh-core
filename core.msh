@@ -2040,6 +2040,7 @@ tn() {
 								"a") if [[ $(vt) == "GIT" ]]; then e vwa $(e $n | cut -d: -f1); fi;;
 								"u") if [[ $(vt) == "GIT" ]]; then e vwu $(e $n | cut -d: -f1); fi;;
 								"d") if [[ $(vt) == "GIT" ]]; then e vwd $(e $n | cut -d: -f1); fi;;
+								"p") if [[ $(vt) == "GIT" ]]; then e vwp $(e $n | cut -d: -f1); fi;;
 						esac;;
 				me) e "vi $MSH/msh-$n/$n.msh -s \"$MOS_TMP/rc.vi\" && mr";;
         *) echo Done nothing.;;
