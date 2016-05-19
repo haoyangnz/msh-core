@@ -210,7 +210,6 @@ msh-guess() {
 			MSH_HELP=$(mhv $(echo $USR_INPUT | cut -f1))
 		fi
 		MSH_HELP=$(e $MSH_HELP | ts "^" "      " | ts "# ")
-
 	fi
 
 	if [[ $MSH_GUESS != "" ]]; then
@@ -290,7 +289,7 @@ msh-personality() {
   else
     MSH_INTER=$BUFFER
   fi
-# Reply
+# Reply (This should stop the execution of the command)
   if [[ $BUFFER == $LAST_BUFFER ]]; then
     MSH_REPLY="You're nagging again.."
   elif [[ $BUFFER == "Hello" ]]; then
@@ -305,9 +304,19 @@ msh-personality() {
     MSH_REPLY="I like it too"
   elif [[ $BUFFER == *"Haoyang"* ]]; then
     MSH_REPLY="I think Haoyang is a genius."
+  elif [[ $BUFFER == "how to"* ]]; then
+    MSH_REPLY="Let me see if I can help you.."
+    msh-help
   else
     MSH_REPLY="OK"
   fi
+}
+
+msh-help() {
+  if ! evn which how2; then
+    pin how2
+  fi
+  BUFFER=$(e $BUFFER | ts "how to" "how2" | ts " in " " -l ")
 }
 
 msh-enter() {
@@ -1095,7 +1104,12 @@ pi() {
 # Package : Install Node
 # pin how2 : Install the npm package "how2" globally
 pin() {
-  npm install -g $@
+  if evn which npm; then
+    e --- Installing node package $@
+    npm install -g $@
+  else
+    e You need to install nodejs and npm first before you can install any node packages.
+  fi
 }
 
 # Package : Uninstall
