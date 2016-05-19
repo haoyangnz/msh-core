@@ -1085,7 +1085,7 @@ wn() {
 pi() {
   e --- Installing $@
 	case $OS in
-			GNU) sudo apt-get install $@;;
+			GNU) sudo apt-get -y install $@;;
 			BSD) brew install $@;;
 	esac
 }
