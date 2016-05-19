@@ -1082,15 +1082,25 @@ wn() {
   evn w $@
 }
 
+# Package : Install
+# pi zsh : Instal the "zsh" package
 pi() {
   e --- Installing $@
-	case $OS in
-			GNU) sudo apt-get -y install $@;;
-			BSD) brew install $@;;
-	esac
+  case $OS in
+      GNU) sudo apt-get -y install $@;;
+      BSD) brew install $@;;
+  esac
 }
 
-pr() {
+# Package : Install Node
+# pin how2 : Install the npm package "how2" globally
+pin() {
+  npm install -g $@
+}
+
+# Package : Uninstall
+# pu zsh : Uninstall the "zsh" package
+pu() {
   e --- Uninstalling $@
   sudo apt-get remove $@
 }
