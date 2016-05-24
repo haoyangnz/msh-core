@@ -210,7 +210,6 @@ msh-guess() {
 			MSH_HELP=$(mhv $(echo $USR_INPUT | cut -f1))
 		fi
 		MSH_HELP=$(e $MSH_HELP | ts "^" "      " | ts "# ")
-
 	fi
 
 	if [[ $MSH_GUESS != "" ]]; then
@@ -290,7 +289,7 @@ msh-personality() {
   else
     MSH_INTER=$BUFFER
   fi
-# Reply
+# Reply (This should stop the execution of the command)
   if [[ $BUFFER == $LAST_BUFFER ]]; then
     MSH_REPLY="You're nagging again.."
   elif [[ $BUFFER == "Hello" ]]; then
@@ -305,9 +304,19 @@ msh-personality() {
     MSH_REPLY="I like it too"
   elif [[ $BUFFER == *"Haoyang"* ]]; then
     MSH_REPLY="I think Haoyang is a genius."
+  elif [[ $BUFFER == "how to"* ]]; then
+    MSH_REPLY="Let me see if I can help you.."
+    msh-help
   else
     MSH_REPLY="OK"
   fi
+}
+
+msh-help() {
+  if ! evn which how2; then
+    pin how2
+  fi
+  BUFFER=$(e $BUFFER | ts "how to" "how2" | ts " in " " -l ")
 }
 
 msh-enter() {
@@ -1082,15 +1091,30 @@ wn() {
   evn w $@
 }
 
+# Package : Install
+# pi zsh : Instal the "zsh" package
 pi() {
   e --- Installing $@
-	case $OS in
-			GNU) sudo apt-get install $@;;
-			BSD) brew install $@;;
-	esac
+  case $OS in
+      GNU) sudo apt-get -y install $@;;
+      BSD) brew install $@;;
+  esac
 }
 
-pr() {
+# Package : Install Node
+# pin how2 : Install the npm package "how2" globally
+pin() {
+  if evn which npm; then
+    e --- Installing node package $@
+    npm install -g $@
+  else
+    e You need to install nodejs and npm first before you can install any node packages.
+  fi
+}
+
+# Package : Uninstall
+# pu zsh : Uninstall the "zsh" package
+pu() {
   e --- Uninstalling $@
   sudo apt-get remove $@
 }
@@ -2437,14 +2461,20 @@ vbn() {
 
 # Version Control : Branch Rebase New
 # vbrn newbase : Create a new branch from "newbase" and cherry pick all unmerged commits (based on the current branch's parent) from the current branch into "newbase"
+# vbrn newbase feature : Create a new branch from "newbase" called "feature-newbase" and cherry pick all unmerged commits (based on the current branch's parent) from the current branch into "newbase"
 vbrn() {
 	case $(vt) in
 		GIT)
       vbrn_vbc=$(vbc)
+      if [[ $2 != "" ]]; then
+        vbrn_feature=$2
+      else
+        vbrn_feature=$vbrn_vbc
+      fi
       vbrn_vbcp=$(vbcp)
       vb $1
       vu
-      vb $vbrn_vbc-$(vbc)
+      vb $vbrn_feature-$(vbc)
       for cherry in $(git cherry $vbrn_vbcp $vbrn_vbc | cut -d" " -f2); do
         git cherry-pick $cherry;
         if [[ $(git ls-files --unmerged | wc -l) -gt 0 ]]; then
