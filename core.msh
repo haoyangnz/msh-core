@@ -2051,6 +2051,7 @@ tn() {
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 								s) if [[ $(vt) == "GIT" ]]; then e vbs $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
+								u) if [[ $(vt) == "GIT" ]]; then e vhu $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
 				vs) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -c4-); fi;;
@@ -2342,16 +2343,6 @@ rv() {
   fi
 }
 
-# SVN Rollback
-# rb 1000 1004 : Roll back changes from revision 1000 to 1004 (Exclusive - Inclusive)
-rb() {
-  if [[ $2 == "" ]]; then
-    svn merge -c -$1 .
-  else
-    svn merge -r $2:$1 .
-  fi
-}
-
 # SVN Merge Out Utility
 # mo : Merge out the changes from head branch to base
 rmo() {
@@ -2418,6 +2409,20 @@ svnlog() {
 
 svndi() {
   svn di -c $1 *
+}
+
+# Version Control : Type
+# vt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
+vt() {
+	if [[ ! -d .svn ]] && evn "git rev-parse --git-dir" ; then
+		e GIT
+	elif [[ -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
+		e SVN
+	elif [[ ! -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
+		e N/A
+	else
+		e $MSH_PREFERRED_REPOSITORY_TYPE
+	fi
 }
 
 # Version Control : Branch {{{
@@ -2632,6 +2637,17 @@ vhd() {
 	vh
 }
 
+# Version Control : History Unapply (Undo)
+# vhu 198f7f8 : Unapply (undo) the a commit in history 198f7f8
+vhu() {
+	case $(vt) in
+		GIT) git revert $1;;
+		SVN) svn merge -c -$1 .;;
+		N/A) e current directory not under version control;;
+		*) e vhu is not supported for your repository type;;
+	esac
+}
+
 # }}}
 
 # Version Control : Revision {{{
@@ -2647,21 +2663,6 @@ vrc() {
 }
 
 # }}}
-
-# Version Control : Type
-# vt : Show repository type (either GIT or SVN) based on current directory and also preferred mode
-vt() {
-	if [[ ! -d .svn ]] && evn "git rev-parse --git-dir" ; then
-		e GIT
-	elif [[ -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
-		e SVN
-	elif [[ ! -d .svn ]] && ! evn "git rev-parse --git-dir" ; then
-		e N/A
-	else
-		e $MSH_PREFERRED_REPOSITORY_TYPE
-	fi
-
-}
 
 # Version Control : Status {{{
 
@@ -2867,6 +2868,42 @@ vr() {
 	vs
 }
 
+# Version Control : Update
+# vu : Update from remote
+vu() {
+	case $(vt) in
+		GIT) git pull;;
+		SVN) svn up;;
+		GITSVN) 
+			vbc=$(vbc)
+      vbcp=$(vbcp)
+			if [[ $vbc != $vbcp ]]; then
+				vbs $vbcp
+			fi
+			svn up
+			git add .
+			vca "svn up"
+			if [[ $vbc != $vbcp ]]; then
+				vbs $vbc
+				vbm $vbcp
+			fi
+			;;
+		N/A) e current directory not under version control;;
+	esac
+}
+
+# Version Control : Publish
+# vp : Publish (push) all outstanding commits to upstream
+vp() {
+	case $(vt) in
+		GIT) git push -u origin $(vbc);;
+		SVN) e vp is not supported for SVN;;
+		N/A) e current directory not under version control;;
+	esac
+}
+
+# Version Control : Commit {{{
+
 # Version Control : Commit
 # rc "Minor change" : Commit changes with comment "Minor change"
 vc() {
@@ -2891,16 +2928,6 @@ vca() {
 	case $(vt) in
 		GIT) git add . && git commit -a -m $1;;
 		SVN) e vca is not supported for SVN;;
-		N/A) e current directory not under version control;;
-	esac
-}
-
-# Version Control : Publish
-# vp : Publish (push) all outstanding commits to upstream
-vp() {
-	case $(vt) in
-		GIT) git push -u origin $(vbc);;
-		SVN) e vp is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
 }
@@ -2943,29 +2970,7 @@ vce() {
 	esac
 }
 
-# Version Control : Update
-# vu : Update from remote
-vu() {
-	case $(vt) in
-		GIT) git pull;;
-		SVN) svn up;;
-		GITSVN) 
-			vbc=$(vbc)
-      vbcp=$(vbcp)
-			if [[ $vbc != $vbcp ]]; then
-				vbs $vbcp
-			fi
-			svn up
-			git add .
-			vca "svn up"
-			if [[ $vbc != $vbcp ]]; then
-				vbs $vbc
-				vbm $vbcp
-			fi
-			;;
-		N/A) e current directory not under version control;;
-	esac
-}
+# }}}
 
 co() {
   wtl "Check out"
