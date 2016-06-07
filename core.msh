@@ -2495,6 +2495,7 @@ vbrn() {
 }
 
 # Version Control : Branch Track
+# vbt feature : Check out branch "feature" from origin into a local branch "feature"
 vbt() {
 	case $(vt) in
 		GIT) git checkout -b $1 origin/$1;;
