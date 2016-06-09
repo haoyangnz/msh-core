@@ -740,6 +740,7 @@ export PASS=TODO
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
 export LANG=en_NZ.UTF-8
+export PATH=.:$PATH
 
 export MOS_ROOT=~/mos
 
