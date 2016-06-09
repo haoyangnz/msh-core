@@ -2654,11 +2654,21 @@ vhu() {
 
 # Version Control : Revision {{{
 
+# Version Control : Revision Branch
+# vrb feature : Get rev id for branch 'feature'
+vrb() {
+	case $(vt) in
+		GIT) git rev-parse $1;;
+		N/A) e current directory not under version control;;
+		*) e vrb is not supported for your repository type;;
+	esac
+}
+
 # Version Control : Revision Current
 # vrc : Get current rev id
 vrc() {
 	case $(vt) in
-		GIT) git rev-parse HEAD | cut -c-7;;
+		GIT) vrb HEAD | cut -c-7;;
 		N/A) e current directory not under version control;;
 		*) e vrc is not supported for your repository type;;
 	esac
