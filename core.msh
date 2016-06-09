@@ -550,7 +550,7 @@ me() {
 		module=$1
 	else
 		command=$1
-		echo "zR/^$1\(" > $MOS_TMP/rc.vi
+		echo "zR/^$1(" > $MOS_TMP/rc.vi
 		module=$(grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1)
 		if [[ $(echo $module | wc -l) > 1 ]]; then
 			pn me "grep ^$command\( $MSH -r --include="*.msh" | ts .*msh- | cut -d/ -f1"
@@ -740,6 +740,7 @@ export PASS=TODO
 export PRINTER=Canon_LBP6780_3580_UFR_II
 export BEEP=/usr/share/sounds/ubuntu/stereo/message-new-instant.ogg
 export LANG=en_NZ.UTF-8
+export PATH=.:$PATH
 
 export MOS_ROOT=~/mos
 
