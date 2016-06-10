@@ -119,7 +119,7 @@ _stp_id() {
   msh_color=$BRCYAN
   msh_status="Up to date"
   for package in $MSH/*; do
-    if [[ $package == msh-* && $package != msh-rc ]]; then
+    if [[ $(rnode $package / 0) == "msh-"* && $(rnode $package / 0) != "msh-rc" ]]; then
       sb git -C $package pull upstream master
       if [[ $(git -C $package rev-parse upstream/master) != $(git -C $package rev-parse HEAD) ]]; then
         msh_color=$RED
