@@ -116,7 +116,19 @@ _stp_id() {
 	if ! evn "dfr | s G" || [[ $(dfr | cut -dG -f1) -le 10 ]]; then
 		stp_disk_color=$RED
 	fi
-	e " ${BRCYAN}MSH $$ @ $(hostname) |$FINISH$stp_disk_color Free disk: $(dfr)$FINISH"
+  msh_color=$BRCYAN
+  msh_status="Up to date"
+  for package in $MSH/*; do
+    if [[ $package == msh-* && $package != msh-rc ]]; then
+      sb git -C $package pull upstream master
+      if [[ $(git -C $package rev-parse upstream/master) != $(git -C $package rev-parse HEAD) ]]; then
+        msh_color=$RED
+        msh_status="Outdated"
+        break
+      fi
+    fi
+  done
+	e " ${BRCYAN}MSH $$ @ $(hostname) |$FINISH$stp_disk_color Free disk: $(dfr)$FINISH | ${msh_color}MSH $msh_status$FINISH"
 }
 
 # _stp_command : Show command input and intepretation in top prompt
@@ -633,7 +645,7 @@ mu() {
 mb() {
 	# Prepare work directory
   pwd=$(pwd)
-  sb
+  dsb
   d rt
   cs
 
@@ -1021,6 +1033,12 @@ svpb() {
 svpbr() {
   eve export $1=\$$1_BU
   unset $1_BU
+}
+
+# Shell : Background
+# sb git pull : Run "git pull" in a background process without disrupting the foreground shell's I/O streams
+sb() {
+  (evn "$@" &)
 }
 
 # }}}
@@ -3032,9 +3050,9 @@ work() {
   fi
 }
 
-# Sandbox: Sandbox
-# sb : Go to the Sandbox directory
-sb() {
+# Directory: Sandbox
+# dsb : Go to the Sandbox directory
+dsb() {
   d $SANDBOX
 }
 
