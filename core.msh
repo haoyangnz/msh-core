@@ -2997,7 +2997,7 @@ vcap() {
 vce() {
 	case $(vt) in
 		GIT)
-      echo "zR/^\<\<\<
+      echo "zR/^<<<
     zz" > $MOS_TMP/vce.vi
       for file in $(git ls-files --unmerged | cut -f2 | sort | uniq); do
         vi $file -s "$MOS_TMP/vce.vi"
