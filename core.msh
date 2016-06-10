@@ -1,4 +1,4 @@
-#### TODO {{{
+### TODO {{{
 # Adjust pager line and line dividers based on screen size
 # Separate personal MSH settings to dotfile
 # Renaming of methods checks plugins		
@@ -2686,9 +2686,19 @@ vrb() {
 # vrc : Get current rev id
 vrc() {
 	case $(vt) in
-		GIT) vrb HEAD | cut -c-7;;
+		GIT) vrb HEAD;;
 		N/A) e current directory not under version control;;
 		*) e vrc is not supported for your repository type;;
+	esac
+}
+
+# Version Control : Revision Current Brief
+# vrcb : Get current abbreviated rev id
+vrcb() {
+	case $(vt) in
+		GIT) vrc | cut -c-7;;
+		N/A) e current directory not under version control;;
+		*) e vrcb is not supported for your repository type;;
 	esac
 }
 
