@@ -13,6 +13,7 @@ Msh (My Shell) is a heavily customised shell built on top of zsh.
 
 # Launching Msh
 Assuming you've done all the steps above:
+
 1. Open your tweaked terminal emulator.
 2. Run `zsh` to launch zsh, with msh configured on top.
 3. Run `std` to launch tmux with the "standard" session configurations.
