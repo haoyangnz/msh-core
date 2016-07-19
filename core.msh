@@ -1636,7 +1636,7 @@ si() {
 }
 
 # Search : Local
-# sl apple : Search for "apple" locally in all files (recursive)
+# sl apple : Search for "apple" locally in all files (recursive, case insensitive)
 sl() {
   if [[ $2 = "" ]]; then
     if $MSH_AUTO_EXCLUDE; then
