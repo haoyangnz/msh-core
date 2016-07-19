@@ -81,7 +81,7 @@ setopt NO_NOTIFY
 # Color {{{
 autoload colors
 colors
-for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
+for color in BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
 eval BR$color='$terminfo[bold]$fg[${(L)color}]'
 eval PBR$color='%{$terminfo[bold]$fg[${(L)color}]%}'
 eval BRBG$color='$terminfo[bold]$bg[${(L)color}]'
