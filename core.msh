@@ -2326,6 +2326,16 @@ sqlte() {
 
 # }}}
 
+# General Programming {{{
+
+# Doc Tag : Search
+# dts todo : Search for all instances of where "TODO" occurs in comments (CAVEAT Currently only works for Java, INTENT allow language detection)
+dts() {
+  sl "//(.* )?$1"
+}
+
+# }}}
+
 # Version Control {{{
 unsvn () {
   find . -name ".svn" | xargs /bin/rm -rf
@@ -2891,9 +2901,6 @@ cia() {
   fi
 }
 
-todo() {
-	svn diff | s todo | ts "^.*TODO "
-}
 
 # Version Control : Add
 # va : Add file by using interactive hunk selection
