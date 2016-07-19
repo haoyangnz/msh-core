@@ -948,10 +948,12 @@ tue() {
 # Pager : Pager Print
 # pgp : Print the current page
 pgp() {
-  cs && echo
-  e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) (+$PAGER_LEFT) $FINISH${BRRED}Selected:$SI$FINISH
-  #catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
-  catb | perl -pe 's/^((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_LEFT'})((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_WIDTH'}).*/$3\e[m/' | nl | al $PAGER_TOP $PAGER_BOTTOM
+  if $MSH_PAGER_ON; then
+    cs && echo
+    e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) (+$PAGER_LEFT) $FINISH${BRRED}Selected:$SI$FINISH
+    #catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
+    catb | perl -pe 's/^((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_LEFT'})((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_WIDTH'}).*/$3\e[m/' | nl | al $PAGER_TOP $PAGER_BOTTOM
+  fi
 }
 
 # Pager : Pager Line Count
@@ -1985,8 +1987,8 @@ ow() {
 # Numbered Shortcut : Selected Numbers Initialise
 # sni : Reset the selected numbers
 sni() {
-   SI=""
    SN=()
+   SI=()
 }
 sni
 
@@ -1995,11 +1997,7 @@ sni
 an() {
   for var in $@; do
     SN+=$var
-    n=$(catlbnc $var)
-    case $(pnc) in
-        l) SI="$SI $(pwd)/$(echo $n | awk '{print $9}')";;
-        *) echo Done nothing.;;
-    esac
+    SI+=$(catlbnc $var)
   done
   pgp
 }
@@ -2012,10 +2010,12 @@ cn() {
 }
 
 # Numbered Shortcut : Selected Numbers
-# sn m a : Move all selected items to a (translates to "m $(e $SI) a")
+# sn m a : Move all selected items to a
 sn() {
-  $1 $(e $SI) ${@:2}
-  sni
+  for si in $SI; do
+    eve $(tn $si $@)
+  done
+  cn
 }
 
 pn() {
@@ -2036,7 +2036,7 @@ fn() {
 # TODO each case could be a new function that's evaluated here, e.g. tn_vh instead of vh in case
 # MAYBE end of action reprint should be done as part of tn (vb, vbd, going back to vb should be done as part of tn not vbd)
 tn() {
-    n=$(catlbnc $1)
+    n=$1
     case $(pnc) in
         d) e cd +$1;;
         t) case $2 in
@@ -2091,27 +2091,23 @@ tn() {
     esac
 }
 
-# Numbered shortcut: Run numbered shortcut # rn 2: Run the numbered shortcut for line 2 of the output of the previous command
+# Numbered shortcut: Run numbered shortcut
+# rn 2: Run the numbered shortcut for line 2 of the output of the previous command
 rn() {
 # Listing numbers to add to selected list quickly
-  if [[ $2 != "" && $2 = [0-9]* ]]; then
-    cmd=()
-    for arg in $@; do
-      if [[ $arg = [0-9]* ]]; then
-        an $arg
-      else
-        cmd+=$arg
-      fi
-    done
-    if [[ $cmd != "" ]]; then
-      sn $cmd
-      unset cmd
+  cmd=()
+  MSH_PAGER_ON=false
+  for arg in $@; do
+    if [[ $arg = [0-9]* ]]; then
+      an $arg
     else
-      pgp
+      cmd+=$arg
     fi
-  else
-    eve $(tn $@)
-  fi
+  done
+  sn $cmd
+  unset cmd
+  MSH_PAGER_ON=true
+  pgp
 }
 
 for ((i = 0; i < 10000; i++)); do
