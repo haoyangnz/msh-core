@@ -1590,10 +1590,15 @@ al() {
   for sn in $SN; do
     SNA+=" || NR == $sn"
   done
+  if [[ $MSH_THEME == DARK ]]; then 
+    ALTBG=$BGBLACK
+  else 
+    ALTBG=$BGWHITE
+  fi
   awk "NR >= $1 && NR <= $2 && ( $SNA ) {printf selected}
        NR >= $1 && NR <= $2 && NR % 2 == 0 {print altbg \$0 finish}
        NR >= $1 && NR <= $2 && NR % 2 == 1 {print \$0}" \
-       selected=$BRRED altbg=$BGWHITE finish=$FINISH
+       selected=$BRRED altbg=$ALTBG finish=$FINISH
 }
 
 # Awk : Awk Column
