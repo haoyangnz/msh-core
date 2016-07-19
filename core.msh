@@ -2854,13 +2854,24 @@ vwd() {
 # }}}
 
 # Version Control : Diff
-# vd : Show repository diff
+# vd : Show repository diff in the file system (working tree)
 vd() {
 	case $(vt) in
 		GIT) git diff --color=always -w $@ | less -r;;
 		SVN) svn diff $@;;
 		N/A) e current directory not under version control;;
 		*) e vd is not supported for your repository type;;
+	esac
+	vs
+}
+
+# Version Control : Diff Index
+# vdi : Show repository diff in the index (staging area)
+vdi() {
+	case $(vt) in
+		GIT) vd --cached $@;;
+		N/A) e current directory not under version control;;
+		*) e vds is not supported for your repository type;;
 	esac
 	vs
 }
