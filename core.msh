@@ -133,12 +133,12 @@ _stp_id() {
 
 # _stp_command : Show command input and intepretation in top prompt
 _stp_command() {
-  stp_hr=$(printf '-%.0s' {1..$(($SCREEN_WIDTH))})
+  stp_hr=$(printf '-%.0s' {1..$(($(sw)))})
   e $BRCYAN$stp_hr$FINISH
   usr_line="${BLUE} USR: $MSH_INTER"
   pwd_lth=$(echo $LAST_PWD | wc -c)
   usr_line_lth=$(echo $usr_line | decolor | wc -c)
-  printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(tput cols) - $usr_line_lth - $pwd_lth + 1 ))
+  printf  "$usr_line%*s$BRCYAN$LAST_PWD$FINISH\n" $(( $(sw) - $usr_line_lth - $pwd_lth + 1 ))
   e $BRCYAN$stp_hr$FINISH
   e "${MAGENTA} MSH: $MSH_REPLY$FINISH"
   e $BRCYAN$stp_hr$FINISH
@@ -952,7 +952,7 @@ pgp() {
     cs && echo
     e $GREEN $(($PAGER_TOP / $PAGER_SIZE + 1))/$(($(catb | wc -l) / $PAGER_SIZE + 1)) (+$PAGER_LEFT) $FINISH${BRRED}Selected:$SI$FINISH
     #catb | cut -c -170 | nl | al $PAGER_TOP $PAGER_BOTTOM
-    catb | perl -pe 's/^((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_LEFT'})((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_WIDTH'}).*/$3\e[m/' | nl | al $PAGER_TOP $PAGER_BOTTOM
+    catb | perl -pe 's/^((?:(?>(?:\e\[.*?(m|K))*).){0,'$PAGER_LEFT'})((?:(?>(?:\e\[.*?(m|K))*).){0,'$(($(sw) - 10))'}).*/$3\e[m/' | nl | al $PAGER_TOP $PAGER_BOTTOM
   fi
 }
 
@@ -974,14 +974,14 @@ pg() {
 # Pager : Right
 # pgr : Scroll the pager to the right
 pgr() {
-  (( PAGER_LEFT += $PAGER_WIDTH/2 ))
+  (( PAGER_LEFT += $(($(sw) - 10))/2 ))
   pgp
 }
 
 # Pager : Left
 # pgl : Scroll the pager to the left
 pgl() {
-  (( PAGER_LEFT -= $PAGER_WIDTH/2 ))
+  (( PAGER_LEFT -= $(($(sw) - 10))/2 ))
   pgp
 }
 
@@ -1041,6 +1041,12 @@ svpbr() {
 # sb git pull : Run "git pull" in a background process without disrupting the foreground shell's I/O streams
 sb() {
   (evn "$@" &)
+}
+
+# Shell : Width
+# sw : Prints terminal width (number of character across)
+sw() {
+  tput cols
 }
 
 # }}}
