@@ -2,7 +2,7 @@
 Msh (My Shell) is a heavily customised shell built on top of zsh.
 
 # Installing Msh
-1. Make sure zsh is installed. (If you want msh to work on top of other shells, feel free to port it yourself. If you want msh to work as a standalone shell, let me know because I've been thinking about that too.)
+1. Make sure zsh is installed. (If you want msh to work on top of other shells, you can give it a try - msh is mostly POSIX compliant - if anything doesn't work feel free to submit a pull request.)
 2. Clone the repository to ~/msh. We strongly recommend you to fork this repository and clone your own fork, instead of cloning my repository, as the core value of Msh is to encourage community contribution. `mkdir ~/msh && cd ~/msh && git clone https://github.com/your-username/msh-core.git`
 3. Install any Msh plugins that you need, similarly to the step 2 above. Again, we strongly recommend you to clone your own fork so that you can contribute easily. For example, `cd ~/msh && git clone https://github.com/your-username/msh-kiwiplan.git`, if you want the Msh Kiwiplan plugin. 
 4. Source msh-core in your .zshrc. `echo ". ~/msh/msh-core/core.msh" > ~/.zshrc`
