@@ -1960,6 +1960,12 @@ hc() {
   : > $MSH_HISTOPENFILE
 }
 
+# History : History Simplify
+# hs : Simplify command history file by removing the old duplicates
+hs() {
+	cat -n $MSH_HISTCMD | sort -r | sort --key=2.1 -b -u | sort -n | cut -c8- > $MSH_HISTCMD
+}
+
 # Find by full name and open with Vi
 of() {
   f $1
