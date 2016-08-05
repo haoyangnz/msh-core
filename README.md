@@ -9,7 +9,6 @@ Msh (My Shell) is a heavily customised shell built on top of zsh.
 5. We also recommend you to get the recommended dot files for a better experience. Clone https://github.com/haoyangnz/msh-dotfiles.git and link the dot files to your home directory.
 6. We recommend running Msh with the "Anonymous Pro" font. Download the font from http://www.marksimonson.com/fonts/view/anonymous-pro put it into your font library. In many linux distros, you can put it in `~/.fonts`. Step 7 talks about using the font in your terminal emulator.
 7. Tweak your terminal emulator: If you are using linux, it's best to run Msh with urxvt (rxvt-unicode), so install that. The msh dotfiles in step 5 would have included .Xresources which will configure the look and feel of urxvt. If you are using Mac OS X, Terminal.app is pretty good, we recommend you configure the colour scheme to Solarized Light (see http://ethanschoonover.com/solarized), and use the Anonymous Pro font from step 6.
-8. Please kindly star the repository.
 
 # Launching Msh
 Assuming you've done all the steps above:
