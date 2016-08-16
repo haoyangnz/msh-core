@@ -81,7 +81,7 @@ setopt NO_NOTIFY
 # Color {{{
 autoload colors
 colors
-for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
+for color in BLACK RED GREEN YELLOW BLUE MAGENTA CYAN WHITE; do
 eval BR$color='$terminfo[bold]$fg[${(L)color}]'
 eval PBR$color='%{$terminfo[bold]$fg[${(L)color}]%}'
 eval BRBG$color='$terminfo[bold]$bg[${(L)color}]'
@@ -1598,10 +1598,15 @@ al() {
   for sn in $SN; do
     SNA+=" || NR == $sn"
   done
+  if [[ $MSH_THEME == DARK ]]; then 
+    ALTBG=$BGBLACK
+  else 
+    ALTBG=$BGWHITE
+  fi
   awk "NR >= $1 && NR <= $2 && ( $SNA ) {printf selected}
        NR >= $1 && NR <= $2 && NR % 2 == 0 {print altbg \$0 finish}
        NR >= $1 && NR <= $2 && NR % 2 == 1 {print \$0}" \
-       selected=$BRRED altbg=$BGWHITE finish=$FINISH
+       selected=$BRRED altbg=$ALTBG finish=$FINISH
 }
 
 # Awk : Awk Column

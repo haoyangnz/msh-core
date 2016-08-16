@@ -1,6 +1,9 @@
 export MSH_SQL_USER=root
 export MSH_SQL_PASS=root
 
+# Msh Theme (Can be LIGHT or DARK)
+export MSH_THEME=LIGHT
+
 # Configure according to your screen size
 export SCREEN_WIDTH=110
 export PAGER_WIDTH=100
