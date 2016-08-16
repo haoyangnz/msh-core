@@ -2079,6 +2079,7 @@ tn() {
 								"") if [[ $n == *remotes*origin* ]]; then e vbt $(echo $n | sed 's/remotes.origin.//g'); else e vbs $n; fi;;
 								d) e vbd $(e $n | sed 's/\*//g');;
 								df) e vbdf $(e $n | sed 's/\*//g');;
+                h) e vbh $(e $n | sed 's/\*//g');;
 						esac;;
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
@@ -2567,6 +2568,16 @@ vbm() {
 	vb
 }
 
+# Version Control : Branch History
+# vbh : Show version control history for the current branch
+vbh() {
+	case $(vt) in
+		GIT) pn vh "git log --graph --full-history --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@";;
+		N/A) e current directory not under version control;;
+		*) e vh is not supported for your repository type;;
+	esac
+}
+
 # Version Control : Branch Merge Diff Incoming Count
 # vbmdic : Show how many commits coming in when merging from the parent branch (behind the parent branch)
 vbmdic() {
@@ -2648,6 +2659,7 @@ vbcp() {
 # Version Control : History {{{
 
 # Version Control : History Simple
+# vhs : Show simplified version control history (omiting linear changes) for all branches
 vhs() {
 	case $(vt) in
 		GIT) git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' --simplify-by-decoration $@;;
@@ -2657,6 +2669,7 @@ vhs() {
 }
 	
 # Version Control : History
+# vh : Show version control history for all branches
 vh() {
 	case $(vt) in
 		GIT) pn vh "git log --graph --full-history --all --color --abbrev-commit --decorate --date=relative --format=format:'%C(blue)%h%C(reset) - %C(green)(%ar)%C(reset) %C(bold red)%s%C(reset) %C(cyan)- %an%C(reset)%C(yellow)%d%C(reset)' $@";;
