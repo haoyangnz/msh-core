@@ -776,12 +776,6 @@ export MSH_HISTOPENFILE=$MOS_TMP/HISTOPENFILE
 
 # }}}
 
-# OS Specific environment variables {{{
-
-[[ $OS == "BSD" ]] && export HOMEBREW_GITHUB_API_TOKEN="e8f1e7cc39091e3114c790cfe2fd7736bdbbebf2"
-
-# }}}
-
 # Core Aliases {{{
 
 alias pls='sudo $(!!)'
