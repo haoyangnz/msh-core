@@ -2089,6 +2089,7 @@ tn() {
 				vh) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 								s) if [[ $(vt) == "GIT" ]]; then e vbs $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
+								a) if [[ $(vt) == "GIT" ]]; then e vha $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 								u) if [[ $(vt) == "GIT" ]]; then e vhu $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
 				vs) case $2 in
@@ -2528,6 +2529,7 @@ vbrn() {
         git cherry-pick $cherry;
         if [[ $(git ls-files --unmerged | wc -l) -gt 0 ]]; then
           vce
+          vca
         fi
       done
       vp
@@ -2692,6 +2694,17 @@ vhd() {
 		*) e vhd is not supported for your repository type;;
 	esac
 	vh
+}
+
+# Version Control : History Apply (Redo/Cherry Pick)
+# vha 198f7f8 : Apply (redo/cherry pick) the a commit in history 198f7f8
+vha() {
+	case $(vt) in
+		GIT) git cherry-pick $1;;
+		SVN) svn merge -c $1 .;;
+		N/A) e current directory not under version control;;
+		*) e vhu is not supported for your repository type;;
+	esac
 }
 
 # Version Control : History Unapply (Undo)
@@ -3008,10 +3021,17 @@ vc() {
 }
 
 # Version Control : Commit All
+# vca : Commit all changes (including unstaged), prompting for a commit message
 # vca "Minor change" : Commit all changes (including unstaged) with comment "Minor change"
 vca() {
 	case $(vt) in
-		GIT) git add . && git commit -a -m $1;;
+		GIT)
+        if [[ $1 == "" ]]; then
+          git add . && git commit -a
+        else
+          git add . && git commit -a -m $1
+        fi
+        ;;
 		SVN) e vca is not supported for SVN;;
 		N/A) e current directory not under version control;;
 	esac
@@ -3048,7 +3068,6 @@ vce() {
         vi $file -s "$MOS_TMP/vce.vi"
       done
       git add .
-      git commit
       ;;
 		SVN) e vce is not supported for SVN;;
 		N/A) e current directory not under version control;;
