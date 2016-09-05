@@ -2582,13 +2582,13 @@ vbh() {
 # Version Control : Branch Merge Diff Incoming Count
 # vbmdic : Show how many commits coming in when merging from the parent branch (behind the parent branch)
 vbmdic() {
-	git rev-list --left-right --count $(vbcp)... | cut -f1
+	git rev-list --left-right --count --no-merges $(vbcp)... | cut -f1
 }
 
 # Version Control : Branch Merge Diff Outgoing Count
 # vbmdoc : Show how many commits going out when merging to the parent branch (ahead of the parent branch)
 vbmdoc() {
-	git rev-list --left-right --count $(vbcp)... | cut -f2
+	git rev-list --left-right --count --no-merges $(vbcp)... | cut -f2
 }
 
 # Version Control : Branch Delete
