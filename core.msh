@@ -2086,6 +2086,11 @@ tn() {
 								a) if [[ $(vt) == "GIT" ]]; then e vha $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 								u) if [[ $(vt) == "GIT" ]]; then e vhu $(e $n | ts ^[^a-z0-9]* | cut -d " " -f1); fi;;
 						esac;;
+        vbmd) case $2 in
+								"") if [[ $(vt) == "GIT" ]]; then e vhd $(e $n | cut -c2- | cut -d " " -f1); fi;;
+								a) if [[ $(vt) == "GIT" ]]; then e vha $(e $n | cut -c2- | cut -d " " -f1); fi;;
+								ai) if [[ $(vt) == "GIT" ]]; then e vhai $(e $n | cut -c2- | cut -d " " -f1); fi;;
+						esac;;
 				vs) case $2 in
 								"") if [[ $(vt) == "GIT" ]]; then e vd $(e $n | cut -c4-); fi;;
 								"o") if [[ $(vt) == "GIT" ]]; then e o $(e $n | cut -c4-); fi;;
@@ -2579,6 +2584,25 @@ vbh() {
 	esac
 }
 
+
+# Version Control : Branch Merge Diff Ahead
+# vbmda master : Show all commits that is in the current branch but isn't in master (thus ahead of master)
+vbmda() {
+  if [[ $1 == "" ]]; then
+    1=$(vbcp)
+  fi
+	pn vbmd "git rev-list --left-right --no-merges --pretty=oneline ${1}... | s '>'"
+}
+
+# Version Control : Branch Merge Diff Behind
+# vbmdb master : Show all commits that isn't in the current branch but is in master (thus behind master)
+vbmdb() {
+  if [[ $1 == "" ]]; then
+    1=$(vbcp)
+  fi
+	pn vbmd "git rev-list --left-right --no-merges --pretty=oneline ${1}... | s '<'"
+}
+
 # Version Control : Branch Merge Diff Incoming Count
 # vbmdic : Show how many commits coming in when merging from the parent branch (behind the parent branch)
 vbmdic() {
@@ -2687,7 +2711,6 @@ vhd() {
 		N/A) e current directory not under version control;;
 		*) e vhd is not supported for your repository type;;
 	esac
-	vh
 }
 
 # Version Control : History Apply (Redo/Cherry Pick)
@@ -2697,7 +2720,22 @@ vha() {
 		GIT) git cherry-pick $1;;
 		SVN) svn merge -c $1 .;;
 		N/A) e current directory not under version control;;
-		*) e vhu is not supported for your repository type;;
+		*) e vha is not supported for your repository type;;
+	esac
+}
+
+# Version Control : History Apply Interactive (Redo/Cherry Pick)
+# vhai 198f7f8 : Apply (redo/cherry pick) the a commit in history 198f7f8 by using interactive hunk selection
+vhai() {
+	case $(vt) in
+		GIT)
+        git cherry-pick -n $1
+        vce
+        git reset
+        va
+        ;;
+		N/A) e current directory not under version control;;
+		*) e vhai is not supported for your repository type;;
 	esac
 }
 
@@ -3060,6 +3098,14 @@ vce() {
     zz" > $MOS_TMP/vce.vi
       for file in $(git ls-files --unmerged | cut -f2 | sort | uniq); do
         vi $file -s "$MOS_TMP/vce.vi"
+          while s "<<<" $file; do
+            echo Isn\'t $(s "<<<" $file) another conflict? n to skip.
+            read answer
+            if [[ $answer == "n" || $answer == "N" ]]; then
+              break
+            fi
+            vi $file -s "$MOS_TMP/vce.vi"
+          done
       done
       git add .
       ;;
