@@ -604,7 +604,7 @@ mcv() {
 # MSH : Install
 # mi haoyangnz node : Install MSH module "msh-node" from haoyangnz's github repository msh-node
 mi() {
-	git clone https://github.com/$1/msh-$2 $MSH/msh-$2
+  git clone git@github.com:$1/msh-$2.git $MSH/msh-$2
 	mr
 }
 
