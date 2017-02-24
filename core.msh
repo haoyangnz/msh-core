@@ -3285,6 +3285,9 @@ fi
 if [[ -d "/usr/local/java/maven3/bin" ]] ; then
     PATH="/usr/local/java/maven3/bin:$PATH"
 fi
+if [[ -d "/usr/lib/jvm/maven3/bin" ]] ; then
+    PATH="/usr/lib/jvm/maven3/bin:$PATH"
+fi
 if [[ -d "~/.local/bin" ]] ; then
     PATH="~/.local/bin:$PATH"
 fi
