@@ -1514,7 +1514,7 @@ std() {
     tmk Personal
     tmn Personal
 		tmw Personal:2
-    tmt Personal:1 "note" C-m
+    tmt Personal:1 "ssse" C-m
     tmt Personal:2 "work" C-m
     tmg Personal:1
   fi
@@ -2510,34 +2510,32 @@ vbn() {
 
 # Version Control : Branch Rebase New
 # vbrn newbase : Create a new branch from "newbase" and cherry pick all unmerged commits (based on the current branch's parent) from the current branch into "newbase"
-# vbrn newbase feature : Create a new branch from "newbase" called "feature-newbase" and cherry pick all unmerged commits (based on the current branch's parent) from the current branch into "newbase"
+# vbrn newbase1 newbase2 newbase3: Do vbrn for each newbase
 vbrn() {
 	case $(vt) in
 		GIT)
-      vbrn_vbc=$(vbc)
-      if [[ $2 != "" ]]; then
-        vbrn_feature=$2
-      else
-        vbrn_feature=$vbrn_vbc
-      fi
-      vbrn_vbcp=$(vbcp)
-      vb $1
-      vu
-      vb $vbrn_feature-$(vbc)
-      for cherry in $(git cherry $vbrn_vbcp $vbrn_vbc | cut -d" " -f2); do
-        git cherry-pick $cherry;
-        if [[ $(git ls-files --unmerged | wc -l) -gt 0 ]]; then
-          vce
-          vca
-        fi
-      done
-      vp
-      ;;
+			vbrn_feature=$(vbc)
+			vbrn_feature_parent=$(vbcp)
+			for vbrn_newbase in $@; do
+				vb $vbrn_newbase
+				vu
+				vb $vbrn_feature-$vbrn_newbase
+				for cherry in $(git cherry $vbrn_feature_parent $vbrn_feature | cut -d" " -f2); do
+					git cherry-pick $cherry;
+					if [[ $(git ls-files --unmerged | wc -l) -gt 0 ]]; then
+					vce
+					vca
+					fi
+				done
+				vp
+			done
+			;;
 		N/A) e current directory not under version control;;
 		*) e vbrn is not supported for your repository type;;
 	esac
 	vb
 }
+
 
 # Version Control : Branch Track
 # vbt feature : Check out branch "feature" from origin into a local branch "feature"
