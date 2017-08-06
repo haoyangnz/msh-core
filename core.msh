@@ -1438,6 +1438,12 @@ ins() {
   sed -i "1i$2" $1
 }
 
+fw() {
+  while true; do
+    inotifywait -r -e modify,move,create,delete $1 &> /dev/null && eval $2
+  done
+}
+
 # }}}
 
 # Configuration Files {{{
