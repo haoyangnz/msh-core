@@ -1517,33 +1517,33 @@ std() {
   cd $BASE
 
   if [[ $1 = "" || $1 = "1" ]]; then
-    tmk Personal
-    tmn Personal
-		tmw Personal:2
-    tmt Personal:1 "ssse" C-m
-    tmt Personal:2 "work" C-m
-    tmg Personal:1
+    tmk H
+    tmn H
+    tmw H:2
+    tmt H:1 "ssse" C-m
+    tmt H:2 "work" C-m
+    tmg H:1
   fi
 
   if [[ $1 = "" || $1 = "2" ]]; then
-    tmk Browsing
-    tmn Browsing
-    tmg Browsing:1
+    tmk L
+    tmn L
+    tmg L:1
   fi
 
   if [[ $1 = "" || $1 = "3" ]]; then
-    tmk Primary
-    tmn Primary
-    tmt Primary:1 "pj" C-m
-    tmg Primary:1
+    tmk J
+    tmn J
+    tmt J:1 "pj" C-m
+    tmg J:1
   fi
 
   if [[ $1 = "" || $1 = "4" ]]; then
-    tmk Secondary
-    tmn Secondary -n Secondary
+    tmk K
+    tmn K -n K
   fi
 
-  tma Primary
+  tma J
 }
 
 # }}}
@@ -3278,6 +3278,7 @@ dj() {
 # }}}
 
 # Misc {{{
+echo init misc
 #export _JAVA_OPTIONS='-Dswing.defaultlaf=com.sun.java.swing.plaf.gtk.GTKLookAndFeel'
 #export HISTCONTROL=ignoredups
 #export _JAVA_OPTIONS="-Dawt.useSystemAAFontSettings=lcd"
@@ -3311,6 +3312,7 @@ PERL_MM_OPT="INSTALL_BASE=/home/haoyang.feng/perl5"; export PERL_MM_OPT;
 # Install Software {{{
 
 # TODO coreutils for BSD
+echo init dependencies
 case $OS in
 	GNU) deps=(zsh tmux vim git tree grc sshfs xclip ssh-copy-id);;
 	BSD) deps=(zsh tmux vim git tree grc ssh-copy-id);;
@@ -3323,6 +3325,7 @@ done
 
 # Directories {{{
 
+echo init directories
 md $MOS_TMP $MOS_TMP/stdout $MOS_TMP/stdbuf $MOS_TMP/stderr
 md $MNT
 md $TRASH $ARCHIVE
@@ -3331,6 +3334,7 @@ md $TRASH $ARCHIVE
 
 # Mount {{{
 
+echo init mount
 if [[ ! -d $MNT/calypso ]]; then
   md $MNT/calypso
   rmm calypso:/data/kiwiplan/docs/TSS $MNT/calypso
@@ -3350,6 +3354,7 @@ fi
 
 # Setup Environment {{{
 
+echo init startup
 case $OS in
 	GNU) eval $(dircolors ~/.dir_colors);;
 	BSD) eval $(gdircolors ~/.dir_colors) && eval $(ls-colors-linux-to-bsd);;
@@ -3359,8 +3364,10 @@ esac
 
 # Load Msh Packages {{{
 
+echo init packages
 d $MSH
-for package in $(ls); do
+for package in $(ls -d msh-*); do
+	echo init $package
 	if [[ $package != msh-core && $package != msh-rc ]]; then
     if [[ -a $package/$package.mshrc ]]; then
 			if [[ ! -a msh-rc/$package.mshrc ]]; then
@@ -3393,6 +3400,7 @@ done
 
 # Goto home or go back {{{
 
+echo init msh
 if $NEW; then
   cs
   echo
